@@ -1,0 +1,52 @@
+@startuml
+title Pati — Uçtan Uca Rezervasyon ve Hizmet Akışı
+skinparam shadowing false
+|Pet sahibi|
+start
+:Kayıt / telefon ve e-posta doğrulama;
+:Pet profili seç;
+note right
+Tür, ırk, yaş, kilo,
+alerji, ilaç, aşı ve sağlık notu
+end note
+:Şehir, ilçe, kategori, fiyat,
+puan, uygunluk ve acil filtreleri;
+:Doğrulanmış işletme profilini incele;
+:Hizmet + tarih/saat + adres + not seç;
+|Platform|
+:Uygunluk ve fiyatı yeniden doğrula;
+:Rezervasyonu oluştur;
+:Ödemeyi yetkilendir / blokeye al;
+:Sağlayıcıya talep ve bildirim gönder;
+|Hizmet sağlayıcı|
+if (Talep kabul?) then (Evet)
+ :Takvim slotunu kesinleştir;
+ :Hazırlık notu gönder;
+else (Ret / süre aşımı)
+ |Platform|
+ :Slotu serbest bırak;
+ :Yetkilendirmeyi iptal et / iade et;
+ stop
+endif
+:Check-in / hizmet başladı;
+:Kanıt ve hizmet notu ekle;
+:Hizmet tamamlandı bildir;
+|Pet sahibi|
+if (Sonuç onayı?) then (Onay)
+ :Puan ve yorum bırak;
+ |Platform|
+ :Komisyonu ayır;
+ :Sağlayıcı hak edişini planla;
+ :Fatura / makbuz ve bildirim üret;
+else (İtiraz)
+ :Neden ve kanıt gönder;
+ |Platform|
+ :Ödemeyi blokede tut;
+ |Admin|
+ :İki tarafın beyan ve kanıtlarını incele;
+ :İade / kısmi iade / hak ediş kararı;
+endif
+|Platform|
+:Audit kaydı ve durum bildirimleri;
+stop
+@enduml

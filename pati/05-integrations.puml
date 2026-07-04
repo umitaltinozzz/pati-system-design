@@ -1,0 +1,43 @@
+@startuml
+title Pati — Entegrasyonlar ve Veri Sınırları
+skinparam componentStyle rectangle
+skinparam shadowing false
+rectangle "Pati Entegrasyon Katmanı" as Hub {
+ [Payment Adapter] as PA
+ [Map Adapter] as MA
+ [Messaging Adapter] as MSG
+ [VoIP Adapter] as VA
+ [AI Gateway] as AIG
+ [Import / Data Quality Pipeline] as IMP
+ [Webhook Receiver] as WH
+}
+cloud "Lisanslı ödeme sağlayıcısı" as Pay
+cloud "Harita / Geocoding / Rota" as Map
+cloud "WhatsApp Business API" as WA
+cloud "SMS / E-posta / Push" as Notify
+cloud "VoIP sağlayıcısı" as Voip
+cloud "AI metin modeli" as LLM
+cloud "AI görsel üretimi" as IMG
+cloud "Web / dizin / açık veri" as Sources
+database "İzin ve çağrı kayıtları" as Consent
+database "Ödeme defteri" as Ledger
+PA --> Pay : tokenized ödeme
+Pay --> WH : ödeme / iade webhook
+PA --> Ledger : tutar, komisyon, durum
+MA --> Map : yakınlık, koordinat, ETA
+MSG --> WA : template + opt-in
+MSG --> Notify : işlem bildirimi
+MSG --> Consent : izin kontrolü
+VA --> Voip : arama başlat / sonuç al
+VA --> Consent : zaman, operatör, sonuç
+AIG --> LLM : semptom özeti; minimum veri
+AIG --> IMG : stil promptu; pet avatarı
+IMP --> Sources : aday veri çek
+IMP --> Hub : normalize / tekilleştir / skorla
+WH --> Hub : imza + idempotency kontrolü
+note right of AIG
+AI sağlık çıktısı tanı değildir.
+Risk seviyesi + güvenli yönlendirme üretir;
+acil riskte veteriner/acil servis önerir.
+end note
+@enduml

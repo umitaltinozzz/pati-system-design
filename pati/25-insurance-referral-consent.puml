@@ -1,0 +1,38 @@
+@startuml
+title Pati — Sigorta Teklif Yönlendirmesi ve Veri Paylaşım Rızası
+skinparam shadowing false
+|Kullanıcı|
+start
+:Sigorta ilgisini ve peti seç;
+|Platform|
+:Kapsam, istisna, bekleme süresi ve “aracılık/yönlendirme” rolünü açıkla;
+:Paylaşılacak alanları tek tek göster;
+if (Açık rıza verildi mi?) then (Evet)
+ :Amaç, sağlayıcı, alan listesi, süre ve politika sürümüyle rıza kaydet;
+ :Pet yaşı/türü/ırkı ve izinli minimum sağlık özetini hazırla;
+ :Tek kullanımlık referral_id üret;
+else (Hayır)
+ :Veri göndermeden genel ürün bilgisi göster;
+ stop
+endif
+|Sigorta Sağlayıcısı|
+:Referral ile teklif isteğini al;
+:Teklif, kapsam, fiyat ve son geçerlilik gönder;
+|Platform|
+:Teklifleri standart alanlara normalize et;
+:Sponsorlu sonucu açıkça etiketle;
+|Kullanıcı|
+:Teklifi incele ve sağlayıcıya geç;
+|Platform|
+:Dönüşüm durumunu yalnız izin verilen ölçüde al;
+if (Rıza geri alındı mı?) then (Evet)
+ :Gelecek paylaşımları durdur;
+ :Sağlayıcıya silme/işlem kısıtlama sinyali gönder;
+endif
+stop
+note right
+Sağlık verisi varsayılan olarak paylaşılmaz.
+Fiyat karşılaştırması ile lisans gerektiren sigorta aracılığı
+hukuki değerlendirmede ayrıştırılmalıdır.
+end note
+@enduml

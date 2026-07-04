@@ -1,0 +1,547 @@
+openapi: 3.1.2
+info:
+  title: Pati Platform API
+  version: 1.0.0
+  summary: Pet sahibi, sağlayıcı, rezervasyon, ödeme, güven ve AI/3D API sözleşmesi
+  contact:
+    name: Pati Platform Team
+servers:
+  - url: https://api.pati.example/v1
+    description: Production
+  - url: https://api.staging.pati.example/v1
+    description: Staging
+security:
+  - bearerAuth: []
+tags:
+  - {name: Auth, description: 'Kayıt, giriş ve token yaşam döngüsü'}
+  - {name: Users, description: Kullanıcı profili ve veri hakları}
+  - {name: Pets, description: Pet profili ve sağlık kayıtları}
+  - {name: Discovery, description: 'İşletme, hizmet ve uygunluk keşfi'}
+  - {name: Providers, description: Sağlayıcı yönetim işlemleri}
+  - {name: Booking, description: Teklif ve rezervasyon yaşam döngüsü}
+  - {name: Payments, description: Ödeme yetkilendirme ve sonuçları}
+  - {name: Trust, description: Yorum ve uyuşmazlık işlemleri}
+  - {name: Consent, description: Amaç ve kanal bazlı açık rıza}
+  - {name: Notifications, description: Kullanıcı bildirimleri}
+  - {name: AI, description: Güvenli AI sağlık ve model işleri}
+  - {name: 3D, description: Pet 3D avatar üretim işleri}
+  - {name: Webhooks, description: İmzalı harici sağlayıcı olayları}
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: register
+      summary: Yeni kullanıcı hesabı oluştur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RegisterRequest'}
+      responses:
+        '201': {description: Hesap oluşturuldu, content: {application/json: {schema: {$ref: '#/components/schemas/AuthTokens'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: login
+      summary: Kimlik bilgileriyle oturum aç
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/LoginRequest'}}}
+      responses:
+        '200': {description: Oturum açıldı, content: {application/json: {schema: {$ref: '#/components/schemas/AuthTokens'}}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      operationId: refreshToken
+      summary: Refresh token rotation ile yeni token üret
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, required: [refreshToken], properties: {refreshToken: {type: string}}}}}
+      responses:
+        '200': {description: Token döndürüldü, content: {application/json: {schema: {$ref: '#/components/schemas/AuthTokens'}}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+  /me:
+    get:
+      tags: [Users]
+      operationId: getMe
+      summary: Oturum kullanıcısının profilini getir
+      responses:
+        '200': {description: Profil, content: {application/json: {schema: {$ref: '#/components/schemas/User'}}}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    patch:
+      tags: [Users]
+      operationId: updateMe
+      summary: Oturum kullanıcısının profilini güncelle
+      requestBody:
+        required: true
+        content: {application/merge-patch+json: {schema: {$ref: '#/components/schemas/UpdateUserRequest'}}}
+      responses:
+        '200': {description: Güncellendi, content: {application/json: {schema: {$ref: '#/components/schemas/User'}}}}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /me/export:
+    post:
+      tags: [Users]
+      operationId: requestDataExport
+      summary: Kullanıcı veri dışa aktarım işi başlat
+      responses:
+        '202': {description: Veri dışa aktarım işi, content: {application/json: {schema: {$ref: '#/components/schemas/AsyncJob'}}}}
+  /me/deletion:
+    post:
+      tags: [Users]
+      operationId: requestAccountDeletion
+      summary: Hesap silme workflow'unu başlat
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      responses:
+        '202': {description: Silme workflow'u başladı, content: {application/json: {schema: {$ref: '#/components/schemas/AsyncJob'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /pets:
+    get:
+      tags: [Pets]
+      operationId: listPets
+      summary: Kullanıcının erişebildiği petleri listele
+      responses:
+        '200': {description: Pet listesi, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Pet'}}}}}
+    post:
+      tags: [Pets]
+      operationId: createPet
+      summary: Yeni pet profili oluştur
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/PetInput'}}}
+      responses:
+        '201': {description: Pet oluşturuldu, content: {application/json: {schema: {$ref: '#/components/schemas/Pet'}}}}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /pets/{petId}:
+    parameters: [{$ref: '#/components/parameters/PetId'}]
+    get:
+      tags: [Pets]
+      operationId: getPet
+      summary: Pet profilini getir
+      responses:
+        '200': {description: Pet, content: {application/json: {schema: {$ref: '#/components/schemas/Pet'}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+    patch:
+      tags: [Pets]
+      operationId: updatePet
+      summary: Pet profilini güncelle
+      requestBody:
+        required: true
+        content: {application/merge-patch+json: {schema: {$ref: '#/components/schemas/PetInput'}}}
+      responses:
+        '200': {description: Pet güncellendi, content: {application/json: {schema: {$ref: '#/components/schemas/Pet'}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /pets/{petId}/health-records:
+    parameters: [{$ref: '#/components/parameters/PetId'}]
+    get:
+      tags: [Pets]
+      operationId: listHealthRecords
+      summary: Pet sağlık kayıtlarını listele
+      responses:
+        '200': {description: Sağlık kayıtları, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/HealthRecord'}}}}}
+    post:
+      tags: [Pets]
+      operationId: createHealthRecord
+      summary: Sürümlü pet sağlık kaydı oluştur
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/HealthRecordInput'}}}
+      responses:
+        '201': {description: Sağlık kaydı oluşturuldu, content: {application/json: {schema: {$ref: '#/components/schemas/HealthRecord'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /businesses:
+    get:
+      tags: [Discovery]
+      operationId: searchBusinesses
+      summary: İşletmeleri konum ve filtrelerle ara
+      security: []
+      parameters:
+        - {name: categoryId, in: query, schema: {type: string, format: uuid}}
+        - {name: cityId, in: query, schema: {type: string, format: uuid}}
+        - {name: latitude, in: query, schema: {type: number, minimum: -90, maximum: 90}}
+        - {name: longitude, in: query, schema: {type: number, minimum: -180, maximum: 180}}
+        - {name: radiusKm, in: query, schema: {type: number, minimum: 0.1, maximum: 100}}
+        - {name: verified, in: query, schema: {type: boolean}}
+        - {$ref: '#/components/parameters/PageCursor'}
+        - {$ref: '#/components/parameters/PageLimit'}
+      responses:
+        '200': {description: İşletmeler, content: {application/json: {schema: {$ref: '#/components/schemas/BusinessPage'}}}}
+  /businesses/{businessId}:
+    get:
+      tags: [Discovery]
+      operationId: getBusiness
+      summary: İşletme detayını getir
+      security: []
+      parameters: [{$ref: '#/components/parameters/BusinessId'}]
+      responses:
+        '200': {description: İşletme detayı, content: {application/json: {schema: {$ref: '#/components/schemas/Business'}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /businesses/{businessId}/services:
+    get:
+      tags: [Discovery]
+      operationId: listBusinessServices
+      summary: İşletmenin aktif hizmetlerini listele
+      security: []
+      parameters: [{$ref: '#/components/parameters/BusinessId'}]
+      responses:
+        '200': {description: Hizmetler, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Service'}}}}}
+    post:
+      tags: [Providers]
+      operationId: createBusinessService
+      summary: İşletme için yeni hizmet oluştur
+      parameters:
+        - {$ref: '#/components/parameters/BusinessId'}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/ServiceInput'}}}
+      responses:
+        '201': {description: Hizmet oluşturuldu, content: {application/json: {schema: {$ref: '#/components/schemas/Service'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /services/{serviceId}/availability:
+    get:
+      tags: [Discovery]
+      operationId: getServiceAvailability
+      summary: Hizmetin gerçek zamanlı uygunluğunu getir
+      security: []
+      parameters:
+        - {$ref: '#/components/parameters/ServiceId'}
+        - {name: from, in: query, required: true, schema: {type: string, format: date-time}}
+        - {name: to, in: query, required: true, schema: {type: string, format: date-time}}
+        - {name: petId, in: query, schema: {type: string, format: uuid}}
+      responses:
+        '200': {description: Uygun slotlar, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/AvailabilitySlot'}}}}}
+  /quotes:
+    post:
+      tags: [Booking]
+      operationId: createQuote
+      summary: Süreli ve kalemli fiyat teklifi oluştur
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/QuoteRequest'}}}
+      responses:
+        '201': {description: Süreli fiyat teklifi, content: {application/json: {schema: {$ref: '#/components/schemas/Quote'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /reservations:
+    get:
+      tags: [Booking]
+      operationId: listReservations
+      summary: Kullanıcı veya sağlayıcı rezervasyonlarını listele
+      parameters:
+        - {name: role, in: query, schema: {type: string, enum: [owner, provider]}}
+        - {name: status, in: query, schema: {type: string}}
+        - {$ref: '#/components/parameters/PageCursor'}
+        - {$ref: '#/components/parameters/PageLimit'}
+      responses:
+        '200': {description: Rezervasyonlar, content: {application/json: {schema: {$ref: '#/components/schemas/ReservationPage'}}}}
+    post:
+      tags: [Booking]
+      operationId: createReservation
+      summary: Tekliften idempotent rezervasyon oluştur
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/CreateReservationRequest'}}}
+      responses:
+        '201': {description: Rezervasyon oluşturuldu, content: {application/json: {schema: {$ref: '#/components/schemas/Reservation'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /reservations/{reservationId}:
+    get:
+      tags: [Booking]
+      operationId: getReservation
+      summary: Rezervasyon detayını getir
+      parameters: [{$ref: '#/components/parameters/ReservationId'}]
+      responses:
+        '200': {description: Rezervasyon, content: {application/json: {schema: {$ref: '#/components/schemas/Reservation'}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /reservations/{reservationId}/accept:
+    post:
+      tags: [Providers]
+      operationId: acceptReservation
+      summary: Sağlayıcı olarak rezervasyonu kabul et
+      parameters:
+        - {$ref: '#/components/parameters/ReservationId'}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      responses:
+        '200': {description: Kabul edildi, content: {application/json: {schema: {$ref: '#/components/schemas/Reservation'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /reservations/{reservationId}/reject:
+    post:
+      tags: [Providers]
+      operationId: rejectReservation
+      summary: Sağlayıcı olarak rezervasyonu reddet
+      parameters:
+        - {$ref: '#/components/parameters/ReservationId'}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/ReasonRequest'}}}
+      responses:
+        '200': {description: Reddedildi, content: {application/json: {schema: {$ref: '#/components/schemas/Reservation'}}}}
+  /reservations/{reservationId}/start:
+    post:
+      tags: [Providers]
+      operationId: startService
+      summary: Hizmeti başlat
+      parameters: [{$ref: '#/components/parameters/ReservationId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      responses:
+        '200': {description: Hizmet başladı, content: {application/json: {schema: {$ref: '#/components/schemas/Reservation'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /reservations/{reservationId}/complete:
+    post:
+      tags: [Booking]
+      operationId: completeService
+      summary: Hizmet tamamlanma adımını ilerlet
+      parameters: [{$ref: '#/components/parameters/ReservationId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        content: {application/json: {schema: {type: object, properties: {proofObjectKeys: {type: array, items: {type: string}}}}}}
+      responses:
+        '200': {description: Tamamlama durumu ilerledi, content: {application/json: {schema: {$ref: '#/components/schemas/Reservation'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /reservations/{reservationId}/cancel:
+    post:
+      tags: [Booking]
+      operationId: cancelReservation
+      summary: Politikaya göre rezervasyonu iptal et
+      parameters: [{$ref: '#/components/parameters/ReservationId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/ReasonRequest'}}}
+      responses:
+        '200': {description: İptal sonucu, content: {application/json: {schema: {$ref: '#/components/schemas/CancellationResult'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /payments/intents:
+    post:
+      tags: [Payments]
+      operationId: createPaymentIntent
+      summary: Rezervasyon için ödeme intent oluştur
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/PaymentIntentRequest'}}}
+      responses:
+        '201': {description: Ödeme intent, content: {application/json: {schema: {$ref: '#/components/schemas/PaymentIntent'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /reservations/{reservationId}/reviews:
+    post:
+      tags: [Trust]
+      operationId: createReview
+      summary: Tamamlanan rezervasyon için yorum oluştur
+      parameters: [{$ref: '#/components/parameters/ReservationId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/ReviewInput'}}}
+      responses:
+        '201': {description: Yorum moderasyona alındı, content: {application/json: {schema: {$ref: '#/components/schemas/Review'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /reservations/{reservationId}/disputes:
+    post:
+      tags: [Trust]
+      operationId: createDispute
+      summary: Rezervasyon için uyuşmazlık aç
+      parameters: [{$ref: '#/components/parameters/ReservationId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/DisputeInput'}}}
+      responses:
+        '201': {description: Uyuşmazlık açıldı, content: {application/json: {schema: {$ref: '#/components/schemas/Dispute'}}}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /consents:
+    post:
+      tags: [Consent]
+      operationId: recordConsent
+      summary: Amaç ve kanal bazlı izin kaydet
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/ConsentInput'}}}
+      responses:
+        '201': {description: İzin kaydedildi, content: {application/json: {schema: {$ref: '#/components/schemas/Consent'}}}}
+  /consents/{consentId}/withdraw:
+    post:
+      tags: [Consent]
+      operationId: withdrawConsent
+      summary: Aktif izni geri al
+      parameters:
+        - {name: consentId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      responses:
+        '200': {description: İzin geri alındı, content: {application/json: {schema: {$ref: '#/components/schemas/Consent'}}}}
+  /notifications:
+    get:
+      tags: [Notifications]
+      operationId: listNotifications
+      summary: Kullanıcının bildirimlerini listele
+      parameters: [{$ref: '#/components/parameters/PageCursor'}, {$ref: '#/components/parameters/PageLimit'}]
+      responses:
+        '200': {description: Bildirimler, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/Notification'}}}}}
+  /ai/health-assessments:
+    post:
+      tags: [AI]
+      operationId: createHealthAssessment
+      summary: AI sağlık değerlendirme işi başlat
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/HealthAssessmentRequest'}}}
+      responses:
+        '202': {description: AI değerlendirme işi, content: {application/json: {schema: {$ref: '#/components/schemas/AsyncJob'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /pets/{petId}/3d-jobs:
+    post:
+      tags: [3D]
+      operationId: create3dJob
+      summary: Pet için 3D avatar üretim işi başlat
+      parameters: [{$ref: '#/components/parameters/PetId'}, {$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/Create3dJobRequest'}}}
+      responses:
+        '202': {description: 3D üretim işi, content: {application/json: {schema: {$ref: '#/components/schemas/AsyncJob'}}}}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /jobs/{jobId}:
+    get:
+      tags: [AI, 3D]
+      operationId: getAsyncJob
+      summary: AI veya 3D iş durumunu getir
+      parameters: [{$ref: '#/components/parameters/JobId'}]
+      responses:
+        '200': {description: İş durumu, content: {application/json: {schema: {$ref: '#/components/schemas/AsyncJob'}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /webhooks/payments/{provider}:
+    post:
+      tags: [Webhooks]
+      security: []
+      operationId: paymentWebhook
+      summary: İmzalı ödeme sağlayıcısı olayını işle
+      parameters:
+        - {name: provider, in: path, required: true, schema: {type: string}}
+        - {name: X-Webhook-Id, in: header, required: true, schema: {type: string}}
+        - {name: X-Webhook-Timestamp, in: header, required: true, schema: {type: string}}
+        - {name: X-Webhook-Signature, in: header, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content: {application/json: {schema: {type: object, additionalProperties: true}}}
+      responses:
+        '204': {description: Olay kabul edildi veya daha önce işlendi}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: JWT}
+  parameters:
+    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 16, maxLength: 128}}
+    PageCursor: {name: 'page[cursor]', in: query, schema: {type: string}}
+    PageLimit: {name: 'page[limit]', in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+    PetId: {name: petId, in: path, required: true, schema: {type: string, format: uuid}}
+    BusinessId: {name: businessId, in: path, required: true, schema: {type: string, format: uuid}}
+    ServiceId: {name: serviceId, in: path, required: true, schema: {type: string, format: uuid}}
+    ReservationId: {name: reservationId, in: path, required: true, schema: {type: string, format: uuid}}
+    JobId: {name: jobId, in: path, required: true, schema: {type: string, format: uuid}}
+  responses:
+    Unauthorized: {description: Kimlik doğrulama gerekli, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+    Forbidden: {description: Yetki veya açık rıza yok, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+    NotFound: {description: Kaynak bulunamadı veya görünür değil, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+    Conflict: {description: Durum/slot/idempotency çakışması, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+    ValidationError: {description: Alan doğrulama hatası, content: {application/problem+json: {schema: {$ref: '#/components/schemas/Problem'}}}}
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status, code, requestId]
+      properties:
+        type: {type: string, format: uri}
+        title: {type: string}
+        status: {type: integer}
+        detail: {type: string}
+        instance: {type: string}
+        code: {type: string, examples: [SLOT_UNAVAILABLE]}
+        requestId: {type: string, format: uuid}
+        errors: {type: array, items: {type: object, required: [field, code], properties: {field: {type: string}, code: {type: string}, message: {type: string}}}}
+    RegisterRequest:
+      type: object
+      required: [displayName, password]
+      properties:
+        displayName: {type: string, minLength: 2, maxLength: 100}
+        email: {type: string, format: email}
+        phone: {type: string, pattern: '^\+[1-9][0-9]{7,14}$'}
+        password: {type: string, minLength: 12, maxLength: 128}
+      anyOf: [{required: [email]}, {required: [phone]}]
+    LoginRequest: {type: object, required: [identifier, password], properties: {identifier: {type: string}, password: {type: string}}}
+    AuthTokens: {type: object, required: [accessToken, refreshToken, expiresIn], properties: {accessToken: {type: string}, refreshToken: {type: string}, expiresIn: {type: integer, minimum: 60}}}
+    User:
+      type: object
+      required: [id, displayName, status, locale, createdAt]
+      properties:
+        id: {type: string, format: uuid}
+        displayName: {type: string}
+        email: {type: [string, 'null'], format: email}
+        phone: {type: [string, 'null']}
+        status: {type: string, enum: [pending, active, locked, suspended, deletion_pending, anonymized]}
+        locale: {type: string}
+        createdAt: {type: string, format: date-time}
+    UpdateUserRequest: {type: object, properties: {displayName: {type: string, minLength: 2}, locale: {type: string}, timezone: {type: string}}}
+    PetInput:
+      type: object
+      required: [name, speciesId]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 100}
+        speciesId: {type: integer}
+        breedId: {type: [integer, 'null']}
+        sex: {type: [string, 'null'], enum: [female, male, unknown, null]}
+        birthDate: {type: [string, 'null'], format: date}
+        weightKg: {type: [number, 'null'], exclusiveMinimum: 0, maximum: 500}
+    Pet:
+      allOf:
+        - {$ref: '#/components/schemas/PetInput'}
+        - {type: object, required: [id, status, createdAt], properties: {id: {type: string, format: uuid}, status: {type: string, enum: [active, missing, deceased, archived]}, createdAt: {type: string, format: date-time}}}
+    HealthRecordInput: {type: object, required: [recordType, occurredAt, title, payload], properties: {recordType: {type: string, enum: [vaccination, examination, laboratory, prescription, allergy, medication, weight, procedure, note]}, occurredAt: {type: string, format: date-time}, title: {type: string}, payload: {type: object}, documentObjectKey: {type: string}, supersedesRecordId: {type: string, format: uuid}}}
+    HealthRecord: {allOf: [{$ref: '#/components/schemas/HealthRecordInput'}, {type: object, required: [id, createdAt], properties: {id: {type: string, format: uuid}, createdAt: {type: string, format: date-time}}}]}
+    Business:
+      type: object
+      required: [id, displayName, status, verificationStatus, cityId, ratingAverage, reviewCount]
+      properties:
+        id: {type: string, format: uuid}
+        displayName: {type: string}
+        description: {type: [string, 'null']}
+        cityId: {type: string, format: uuid}
+        districtId: {type: [string, 'null'], format: uuid}
+        latitude: {type: number}
+        longitude: {type: number}
+        status: {type: string}
+        verificationStatus: {type: string}
+        ratingAverage: {type: number, minimum: 0, maximum: 5}
+        reviewCount: {type: integer, minimum: 0}
+    BusinessPage: {type: object, required: [items, page], properties: {items: {type: array, items: {$ref: '#/components/schemas/Business'}}, page: {$ref: '#/components/schemas/PageInfo'}}}
+    ServiceInput: {type: object, required: [categoryId, name, minPrice, maxPrice, currency], properties: {categoryId: {type: string, format: uuid}, name: {type: string}, description: {type: string}, durationMinutes: {type: integer, minimum: 5}, minPrice: {$ref: '#/components/schemas/Decimal'}, maxPrice: {$ref: '#/components/schemas/Decimal'}, currency: {$ref: '#/components/schemas/Currency'}, capacity: {type: integer, minimum: 1}, eligibilityRules: {type: object}}}
+    Service: {allOf: [{$ref: '#/components/schemas/ServiceInput'}, {type: object, required: [id, businessId, isActive], properties: {id: {type: string, format: uuid}, businessId: {type: string, format: uuid}, isActive: {type: boolean}}}]}
+    AvailabilitySlot: {type: object, required: [startsAt, endsAt, remainingCapacity], properties: {startsAt: {type: string, format: date-time}, endsAt: {type: string, format: date-time}, remainingCapacity: {type: integer, minimum: 1}}}
+    QuoteRequest: {type: object, required: [petId, serviceId, startsAt], properties: {petId: {type: string, format: uuid}, serviceId: {type: string, format: uuid}, startsAt: {type: string, format: date-time}, endsAt: {type: string, format: date-time}, addressId: {type: string, format: uuid}, options: {type: object}}}
+    Quote: {type: object, required: [id, petId, serviceId, startsAt, endsAt, total, currency, expiresAt, priceBreakdown], properties: {id: {type: string, format: uuid}, petId: {type: string, format: uuid}, serviceId: {type: string, format: uuid}, startsAt: {type: string, format: date-time}, endsAt: {type: string, format: date-time}, subtotal: {$ref: '#/components/schemas/Decimal'}, discount: {$ref: '#/components/schemas/Decimal'}, tax: {$ref: '#/components/schemas/Decimal'}, total: {$ref: '#/components/schemas/Decimal'}, currency: {$ref: '#/components/schemas/Currency'}, expiresAt: {type: string, format: date-time}, priceBreakdown: {type: array, items: {type: object, required: [code, amount], properties: {code: {type: string}, amount: {$ref: '#/components/schemas/Decimal'}}}}}}
+    CreateReservationRequest: {type: object, required: [quoteId], properties: {quoteId: {type: string, format: uuid}, paymentMethodToken: {type: string}, notes: {type: string, maxLength: 2000}}}
+    Reservation: {type: object, required: [id, ownerId, petId, businessId, serviceId, status, startsAt, endsAt, totalAmount, currency, version], properties: {id: {type: string, format: uuid}, ownerId: {type: string, format: uuid}, petId: {type: string, format: uuid}, businessId: {type: string, format: uuid}, serviceId: {type: string, format: uuid}, status: {type: string, enum: [created, payment_pending, provider_pending, accepted, rejected, cancelled, service_started, provider_completed, user_confirmation, disputed, completed, expired]}, startsAt: {type: string, format: date-time}, endsAt: {type: string, format: date-time}, totalAmount: {$ref: '#/components/schemas/Decimal'}, currency: {$ref: '#/components/schemas/Currency'}, version: {type: integer, minimum: 1}, createdAt: {type: string, format: date-time}}}
+    ReservationPage: {type: object, required: [items, page], properties: {items: {type: array, items: {$ref: '#/components/schemas/Reservation'}}, page: {$ref: '#/components/schemas/PageInfo'}}}
+    ReasonRequest: {type: object, required: [reasonCode], properties: {reasonCode: {type: string}, note: {type: string, maxLength: 2000}}}
+    CancellationResult: {type: object, required: [reservation, refundAmount, currency], properties: {reservation: {$ref: '#/components/schemas/Reservation'}, refundAmount: {$ref: '#/components/schemas/Decimal'}, feeAmount: {$ref: '#/components/schemas/Decimal'}, currency: {$ref: '#/components/schemas/Currency'}}}
+    PaymentIntentRequest: {type: object, required: [reservationId, paymentMethodToken], properties: {reservationId: {type: string, format: uuid}, paymentMethodToken: {type: string}}}
+    PaymentIntent: {type: object, required: [id, status, amount, currency], properties: {id: {type: string, format: uuid}, status: {type: string, enum: [created, requires_action, authorized, failed]}, amount: {$ref: '#/components/schemas/Decimal'}, currency: {$ref: '#/components/schemas/Currency'}, clientAction: {type: [object, 'null']}}}
+    ReviewInput: {type: object, required: [rating], properties: {rating: {type: integer, minimum: 1, maximum: 5}, comment: {type: string, maxLength: 4000}}}
+    Review: {allOf: [{$ref: '#/components/schemas/ReviewInput'}, {type: object, required: [id, moderationStatus], properties: {id: {type: string, format: uuid}, moderationStatus: {type: string, enum: [pending, published, hidden, rejected]}}}]}
+    DisputeInput: {type: object, required: [reasonCode, statement], properties: {reasonCode: {type: string}, statement: {type: string, minLength: 10, maxLength: 10000}, evidenceObjectKeys: {type: array, maxItems: 10, items: {type: string}}}}
+    Dispute: {type: object, required: [id, reservationId, status, dueAt], properties: {id: {type: string, format: uuid}, reservationId: {type: string, format: uuid}, status: {type: string, enum: [open, awaiting_user, awaiting_provider, under_review, resolved, rejected, appealed]}, dueAt: {type: string, format: date-time}, resolution: {type: [string, 'null']}}}
+    ConsentInput: {type: object, required: [channel, purpose, status, policyVersion], properties: {channel: {type: string, enum: [email, sms, push, whatsapp, phone, ai_health, ai_training, location, insurance_referral]}, purpose: {type: string}, status: {type: string, enum: [granted, denied]}, policyVersion: {type: string}, expiresAt: {type: string, format: date-time}}}
+    Consent: {allOf: [{$ref: '#/components/schemas/ConsentInput'}, {type: object, required: [id, createdAt], properties: {id: {type: string, format: uuid}, createdAt: {type: string, format: date-time}, withdrawnAt: {type: [string, 'null'], format: date-time}}}]}
+    Notification: {type: object, required: [id, eventType, title, body, createdAt], properties: {id: {type: string, format: uuid}, eventType: {type: string}, title: {type: string}, body: {type: string}, actionUrl: {type: [string, 'null']}, readAt: {type: [string, 'null'], format: date-time}, createdAt: {type: string, format: date-time}}}
+    HealthAssessmentRequest: {type: object, required: [petId, consentId, symptoms], properties: {petId: {type: string, format: uuid}, consentId: {type: string, format: uuid}, symptoms: {type: string, minLength: 5, maxLength: 5000}, duration: {type: string}, attachments: {type: array, maxItems: 5, items: {type: string}}}}
+    Create3dJobRequest: {type: object, required: [consentId, style, sourceObjectKeys], properties: {consentId: {type: string, format: uuid}, style: {type: string, enum: [realistic, soft_3d, game, mascot]}, sourceObjectKeys: {type: array, minItems: 3, maxItems: 20, items: {type: string}}}}
+    AsyncJob: {type: object, required: [id, type, status, createdAt], properties: {id: {type: string, format: uuid}, type: {type: string}, status: {type: string, enum: [queued, running, review_required, completed, failed, cancelled]}, progress: {type: integer, minimum: 0, maximum: 100}, resultUrl: {type: [string, 'null']}, errorCode: {type: [string, 'null']}, createdAt: {type: string, format: date-time}, completedAt: {type: [string, 'null'], format: date-time}}}
+    PageInfo: {type: object, required: [hasNext], properties: {nextCursor: {type: [string, 'null']}, hasNext: {type: boolean}}}
+    Decimal: {type: string, pattern: '^[0-9]+\.[0-9]{2}$', examples: ['1250.00']}
+    Currency: {type: string, pattern: '^[A-Z]{3}$', examples: [TRY]}

@@ -1,0 +1,37 @@
+@startuml
+title Pati — Arama, Filtreleme ve Açıklanabilir Sıralama
+skinparam componentStyle rectangle
+skinparam shadowing false
+actor Kullanıcı
+component "Search API" as API
+component "Query Understanding" as QU
+component "Geo Filter" as GEO
+component "Eligibility Filter" as EL
+component "Ranking Engine" as R
+database "Search Index" as IDX
+database "Availability Read Model" as AV
+database "Trust Signals" as TS
+database "Commercial Rules" as CR
+component "Explanation Builder" as EX
+component "Experiment Guardrail" as AB
+Kullanıcı --> API : metin + pet + konum + zaman + filtre
+API --> QU : kategori/niyet/yazım düzeltme
+QU --> IDX : aday getir
+IDX --> GEO : mesafe / hizmet alanı
+GEO --> EL : aktif + doğrulanmış + pet uygunluğu
+AV --> EL : gerçek uygunluk
+EL --> R : uygun adaylar
+TS --> R : puan güveni, şikâyet, iptal, yanıt süresi
+CR --> R : fiyat şeffaflığı + sponsorlu kural
+R --> AB : sıralama + deneyim varyantı
+AB --> EX
+EX --> API : sonuç + neden + rozet + sponsor etiketi
+API --> Kullanıcı
+note bottom
+Örnek organik skor: uygunluk, mesafe, gerçek zamanlı müsaitlik,
+Bayes-düzeltilmiş puan, yanıt süresi ve iptal oranı.
+Sponsorlu sonuç güven/uygunluk filtresini aşamaz ve açıkça etiketlenir.
+Irk/tür gibi alanlar yalnız hizmet uygunluğu için kullanılır;
+haksız ayrımcılık ve self-preference düzenli denetlenir.
+end note
+@enduml

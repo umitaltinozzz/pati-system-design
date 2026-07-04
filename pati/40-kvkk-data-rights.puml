@@ -1,0 +1,45 @@
+@startuml
+title Pati — KVKK Veri Hakları, Dışa Aktarım ve Silme Orkestrasyonu
+skinparam shadowing false
+|Kullanıcı|
+start
+:Erişim / düzeltme / dışa aktarım / silme talebi;
+|Platform|
+:Kimlik ve hesap sahipliğini step-up doğrula;
+:Talep türü, zaman ve yasal SLA kaydı oluştur;
+if (Dışa aktarım?) then (Evet)
+ :Veri envanterinden kullanıcı kapsamını çıkar;
+ :Hassas üçüncü taraf verisini ayır/maskeler;
+ :Makine okunur JSON/CSV + belgeleri paketle;
+ :Şifreli, kısa ömürlü tek kullanımlık indirme üret;
+endif
+if (Düzeltme?) then (Evet)
+ :Değiştirilebilir alanı düzelt;
+ :Finans/audit/klinik kaydında ters kayıt veya ek açıklama oluştur;
+endif
+if (Silme?) then (Evet)
+ :Aktif rezervasyon, uyuşmazlık, borç ve hukuki saklamayı kontrol et;
+ :Bekleme süresi ve iptal olanağı bildir;
+ :Oturumları ve pazarlama izinlerini hemen kapat;
+ :Servislere deletion_requested olayı yayınla;
+ fork
+  :Profil ve iletişim PII anonimleştir;
+ fork again
+  :Arama, cache ve analitik kimlikleri temizle;
+ fork again
+  :Dosya ve AI artefact silme kuyruğu;
+ fork again
+  :Harici işlemcilere silme/kısıtlama isteği;
+ end fork
+ :Finans/audit kayıtlarını amaçla sınırlı ve erişimi kısıtlı tut;
+ :Silme kanıtı ve tamamlanma raporu üret;
+endif
+|Kullanıcı|
+:Talep sonucu ve itiraz kanalını al;
+stop
+note right
+Backup verisi aktif sisteme dönmez; yaşam döngüsü sonunda silinir.
+Silme kanıtı kişisel verinin kendisini yeniden üretmez.
+Retention matrisi veri sınıfı, amaç, dayanak ve süreyi tanımlar.
+end note
+@enduml

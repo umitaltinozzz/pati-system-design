@@ -1,0 +1,47 @@
+@startuml
+title Pati — 3D Pet Asset Üretim Pipeline'ı
+skinparam componentStyle rectangle
+skinparam shadowing false
+queue "3D Job Queue" as Q
+component "Input Validator" as IV
+component "Pet Segmentation" as SEG
+component "Multi-view Reconstruction" as REC
+component "Species Shape Prior" as PRIOR
+component "Mesh Cleanup" as MC
+component "UV Unwrap" as UV
+component "Texture Synthesis" as TEX
+component "Fur / Coat Generator" as FUR
+component "Auto Rigging" as RIG
+component "Animation Retarget" as ANIM
+component "LOD / Compression" as LOD
+component "Quality Evaluator" as QE
+component "Human Review" as HR
+database "Model / Prompt Registry" as MR
+database "Versioned 3D Assets" as AS
+Q --> IV
+IV --> SEG
+SEG --> REC
+PRIOR --> REC : tür/ırk morfoloji prior
+REC --> MC
+MC --> UV
+UV --> TEX
+TEX --> FUR
+MC --> RIG
+RIG --> ANIM
+FUR --> LOD
+ANIM --> LOD
+LOD --> QE
+MR --> SEG
+MR --> REC
+MR --> TEX
+MR --> RIG
+QE --> AS : kalite eşiği geçti
+QE --> HR : düşük güven / anatomi sorunu
+HR --> Q : düzeltme maskesiyle yeniden üret
+note bottom
+Çıktılar: GLB/glTF master, mobil LOD0–LOD2, thumbnail,
+texture atlas, skeleton, blendshape ve provenance manifest.
+Kalite: siluet/renk benzerliği, anatomi, mesh bütünlüğü,
+UV seam, rig deformasyonu, dosya boyutu ve cihaz FPS.
+end note
+@enduml

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pati — Profesyonel Sistem Tasarımı</title>
+  <style>
+    :root{color-scheme:dark;--bg:#090b10;--panel:#121620;--line:#293041;--text:#edf1f7;--muted:#9aa5b5;--pet:#65d6a6}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 50% -20%,#232b3a 0,#090b10 42%);color:var(--text);font:15px/1.5 Inter,Segoe UI,system-ui,sans-serif}
+    header{position:sticky;top:0;z-index:10;background:rgba(9,11,16,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+    .head{max-width:1800px;margin:auto;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}.title{font-size:clamp(20px,3vw,32px);font-weight:800;letter-spacing:-.03em}.sub{color:var(--muted);font-size:13px}.links{display:flex;gap:9px;flex-wrap:wrap}.links a,.source{color:var(--text);text-decoration:none;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#151a24}.links a:hover,.source:hover{border-color:#65728a}
+    main{max-width:1480px;margin:auto;padding:24px}.toc{display:flex;gap:8px;overflow:auto;padding:0 0 20px}.toc a{white-space:nowrap;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:#111620}.toc a:hover{color:var(--pet);border-color:#285847}
+    .group{scroll-margin-top:100px;margin:18px 0 64px}.group-head{border-left:4px solid var(--pet);padding:4px 0 4px 16px;margin-bottom:24px}.group-head h2{font-size:clamp(23px,3vw,34px);letter-spacing:-.03em;margin:0}.group-head p{color:var(--muted);max-width:920px;margin:5px 0 0}.diagram{margin:0 0 30px}.section-title{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:17px}.no{color:var(--pet);font-variant-numeric:tabular-nums;font-weight:800}.file-ref{color:var(--muted);font:12px ui-monospace,monospace;margin-left:auto}.card{min-width:0;background:var(--panel);border:1px solid #285847;border-radius:14px;overflow:hidden}.card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line)}.card-head strong.pet{color:var(--pet)}
+    .viewport{height:650px;overflow:auto;background:#fff;display:grid;place-items:center}.viewport img{display:block;max-width:none;transform-origin:center;transition:width .15s;width:100%;height:auto}.tools{display:flex;gap:5px}.tools button{width:30px;height:30px;border:1px solid var(--line);border-radius:7px;background:#1a202c;color:var(--text);cursor:pointer}.tools button:hover{border-color:#65728a}.source{font-size:12px;padding:5px 8px}
+    footer{color:var(--muted);text-align:center;padding:10px 20px 34px}
+    @media(max-width:900px){.head{align-items:flex-start;flex-direction:column}.viewport{height:430px}.file-ref{display:none}}
+  </style>
+</head>
+<body>
+  <header><div class="head"><div><div class="title">Pati — Profesyonel Sistem Tasarımı</div><div class="sub">60 UML · PostgreSQL şeması · OpenAPI · servis sınırları · AI/3D platformu</div></div><nav class="links"><a href="YAZILIMCI-HANDOFF.md">Başlangıç</a><a href="PATI-MIMARI.md">Mimari</a><a href="pati-sql/README.md">SQL</a><a href="pati-api/openapi.yaml">OpenAPI</a><a href="pati-api/SERVIS-SINIRLARI.md">Servisler</a></nav></div></header>
+  <main>
+    <nav class="toc" id="toc"></nav>
+    <div id="diagrams"></div>
+  </main>
+  <footer>SVG görselleri yerel dosyalardır; sayfa internet bağlantısı olmadan çalışır.</footer>
+  <script>
+    const all = [
+      ['01','Sistem bağlamı','system-context'], ['02','Katmanlı mimari','layered-architecture'],
+      ['03','Ana kullanıcı akışı','core-user-flow'], ['04','Rol ve yetkiler','role-permissions'],
+      ['05','Entegrasyon haritası','integrations'], ['06','Dağıtım mimarisi','deployment-architecture'],
+      ['07','Kritik yaşam döngüsü','critical-lifecycle'], ['08','Admin / operasyon modülleri','admin-module-map'],
+      ['09','MVP yol haritası','mvp-roadmap'],
+      ['10','Çekirdek domain veri modeli','domain-data-model'],
+      ['11','Sağlayıcı onboarding ve doğrulama','provider-onboarding'],
+      ['12','Takvim ve çifte rezervasyon koruması','availability-booking-consistency'],
+      ['13','Ödeme ledger, hak ediş ve iade','payment-ledger-refund'],
+      ['14','İşletme veri toplama ve kalite pipeline’ı','data-ingestion-quality'],
+      ['15','VoIP ve WhatsApp izin zinciri','consent-voip-whatsapp'],
+      ['16','Walker canlı güvenlik akışı','walker-safety-flow'],
+      ['17','AI sağlık asistanı güvenlik sınırı','ai-health-safety'],
+      ['18','Bildirim orkestrasyonu','notification-orchestration'],
+      ['19','Güven, moderasyon ve uyuşmazlık','trust-moderation-dispute'],
+      ['20','Gözlemlenebilirlik, SLO ve olay müdahalesi','observability-slo-incident'],
+      ['21','Hizmet dikeyleri ve ortak yetkinlik haritası','service-capability-map'],
+      ['22','Veteriner ve sağlık kaydı yaşam döngüsü','veterinary-health-record'],
+      ['23','Hotel ve kuaför kapasite planlama','hotel-grooming-capacity'],
+      ['24','Pet taksi dispatch ve canlı yolculuk','pet-taxi-dispatch'],
+      ['25','Sigorta yönlendirme ve veri paylaşım rızası','insurance-referral-consent'],
+      ['26','Arama, filtreleme ve açıklanabilir sıralama','search-ranking-recommendation'],
+      ['27','İptal, no-show ve iade politika motoru','cancellation-policy-engine'],
+      ['28','Domain event sözleşmeleri ve servis sınırları','domain-events-contracts'],
+      ['29','Güvenlik ve mahremiyet tehdit modeli','security-privacy-threat-model'],
+      ['30','Yedekleme ve felaket kurtarma','backup-disaster-recovery'],
+      ['31','Kimlik, oturum ve hesap yaşam döngüsü','auth-account-lifecycle'],
+      ['32','Pet kimliği, sahiplik ve paylaşımlı bakım','pet-identity-ownership'],
+      ['33','Fiyat, paket, promosyon ve komisyon motoru','pricing-promotion-engine'],
+      ['34','Sahtecilik ve kötüye kullanım risk motoru','fraud-risk-engine'],
+      ['35','Sağlayıcı hak ediş, vergi ve hesap değişikliği','provider-payout-tax'],
+      ['36','Müşteri destek ve CRM vaka yönetimi','customer-support-crm'],
+      ['37','Kategori ve hizmet kataloğu yönetişimi','catalog-governance'],
+      ['38','Ürün analitiği, KPI ve deney altyapısı','product-analytics-experimentation'],
+      ['39','Erişilebilirlik ve lokalizasyon','accessibility-localization'],
+      ['40','KVKK veri hakları, dışa aktarım ve silme','kvkk-data-rights'],
+      ['41','Pet fotoğrafından 3D avatar onboarding','pet-3d-capture-onboarding'],
+      ['42','3D mesh, texture, fur, rig ve LOD pipeline’ı','pet-3d-asset-pipeline'],
+      ['43','Mobil/web 3D viewer ve AR runtime','3d-viewer-runtime'],
+      ['44','AI model portföyü ve istek yönlendirme','ai-model-portfolio-routing'],
+      ['45','Model eğitimi, değerlendirme ve MLOps','mlops-training-lifecycle'],
+      ['46','Veteriner bilgi RAG ve kaynak yönetişimi','veterinary-rag-knowledge'],
+      ['47','İzinli kişiselleştirme ve öneri modeli','ai-personalization-recommendation'],
+      ['48','AI güvenlik ve insan inceleme döngüsü','ai-safety-human-review'],
+      ['49','AI serving ve GPU platformu','ai-serving-gpu-platform'],
+      ['50','AI/3D veri yönetişimi ve saklama','ai-3d-data-governance'],
+      ['51','PostgreSQL şema domain ER haritası','sql-schema-domain-erd'],
+      ['52','Rezervasyon ve finans ayrıntılı SQL ERD','booking-finance-sql-erd'],
+      ['53','Kesin teknoloji ve üretim deployment','final-technology-deployment'],
+      ['54','Modüler monolit servis sınırları','modular-service-boundaries'],
+      ['55','API kayıt, giriş ve token rotation','api-auth-token-sequence'],
+      ['56','API idempotent rezervasyon','api-booking-idempotency-sequence'],
+      ['57','API ödeme webhook ve ledger','api-payment-webhook-sequence'],
+      ['58','API AI/3D asenkron job','api-ai-3d-job-sequence'],
+      ['59','Domain event ve workflow entegrasyonu','domain-events-integration'],
+      ['60','API güvenlik ve hata sözleşmesi','api-error-security-contract']
+    ];
+    const byId=Object.fromEntries(all.map(d=>[d[0],d]));
+    const groups=[
+      ['01','Ürün ve Sistem Genel Bakışı','Önce ürünün aktörleri, değer akışı, ana mimarisi, durumları ve teslimat yönü okunur',['01','02','03','04','05','06','07','08','09']],
+      ['02','Uygulama Temeli ve Sözleşmeler','Yazılımcının teknoloji, servis, veri ve API sınırlarını uygulamadan önce sabitlemesi gereken bölüm',['53','54','51','52','28','59','60','55','56','57','58']],
+      ['03','Çekirdek Domain ve İşletme Operasyonu','Pet, sağlayıcı, rezervasyon, finans, iletişim, güven ve yönetim süreçleri',['10','11','12','13','15','18','19','31','32','33','35','36','37','40']],
+      ['04','Hizmet Dikeyleri ve Pazaryeri','Veteriner, hotel, kuaför, walker, taksi, sigorta, arama ve iptal politikaları',['21','22','23','24','25','16','26','27']],
+      ['05','Güvenlik, Veri ve Üretim Operasyonu','Veri kalitesi, tehdit modeli, fraud, SLO, analitik, erişilebilirlik ve felaket kurtarma',['14','29','34','20','38','39','30']],
+      ['06','AI ve 3D Pet Platformu','Sağlık güvenliği, çekimden 3D asset üretimine, model yaşam döngüsüne ve GPU serving’e kadar tüm AI hattı',['17','41','42','43','44','45','46','47','48','49','50']]
+    ];
+    let order=0;
+    const card=(source)=>`<article class="card"><div class="card-head"><strong class="pet">Pati Sistem Tasarımı</strong><div class="tools"><button title="Uzaklaştır" data-zoom="-.15">−</button><button title="Sıfırla" data-reset>1:1</button><button title="Yaklaştır" data-zoom=".15">+</button><a class="source" href="pati/${source}.puml">PUML</a></div></div><div class="viewport"><img src="pati/${source}.svg" alt="Pati UML diyagramı" loading="lazy"></div></article>`;
+    document.querySelector('#toc').innerHTML=groups.map(([id,title])=>`<a href="#group-${id}">${id} · ${title}</a>`).join('');
+    document.querySelector('#diagrams').innerHTML=groups.map(([id,title,intro,ids])=>`<section class="group" id="group-${id}"><div class="group-head"><h2>${id} · ${title}</h2><p>${intro}</p></div>${ids.map(key=>{const [fileNo,name,slug]=byId[key];order++;const source=fileNo+'-'+slug;return `<article class="diagram"><h3 class="section-title"><span class="no">${String(order).padStart(2,'0')}</span>${name}<span class="file-ref">kaynak ${source}</span></h3>${card(source)}</article>`}).join('')}</section>`).join('');
+    document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const img=b.closest('.card').querySelector('img');let z=Number(img.dataset.zoom||1);z=b.hasAttribute('data-reset')?1:Math.max(.25,Math.min(3,z+Number(b.dataset.zoom)));img.dataset.zoom=z;img.style.width=(z*100)+'%'});
+  </script>
+</body>
+</html>

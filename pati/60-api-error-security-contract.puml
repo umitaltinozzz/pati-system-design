@@ -1,0 +1,36 @@
+@startuml
+title Pati API — İstek Güvenliği ve Standart Hata Sözleşmesi
+skinparam shadowing false
+start
+:TLS / WAF / body size / rate limit;
+:JWT signature, issuer, audience ve expiry;
+:Request ID ve trace context;
+:JSON schema / Zod doğrulama;
+:Kaynak sahipliği + RBAC/ABAC;
+:Consent / purpose kontrolü;
+if (Yazma isteği mi?) then (Evet)
+ :Idempotency-Key ve request hash;
+ :Optimistic version / If-Match;
+endif
+:Application command;
+if (Başarılı mı?) then (Evet)
+ :2xx + typed OpenAPI response;
+else (Hayır)
+ :Exception → RFC 9457 Problem mapping;
+ :PII/token/stack trace temizle;
+ :type, title, status, code, requestId;
+ if (Alan hatası?) then (Evet)
+  :errors[field, code, message];
+ endif
+endif
+:Structured log + metric + audit gerekiyorsa audit;
+stop
+note right
+401: kimlik yok/geçersiz
+403: kimlik var, yetki/rıza yok
+404: yok veya görünür değil
+409: state/slot/idempotency çakışması
+422: semantik alan hatası
+429: rate limit
+end note
+@enduml

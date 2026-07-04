@@ -1,0 +1,39 @@
+@startuml
+title Pati — Veteriner Bilgi RAG ve Kaynak Yönetişimi
+skinparam componentStyle rectangle
+skinparam shadowing false
+file "Veteriner onaylı rehberler" as S1
+file "Resmî kurum / ilaç güvenlik metni" as S2
+file "Klinik içerik politikası" as S3
+component "License / Freshness Review" as LR
+component "Parser / Chunker" as CH
+component "Medical Metadata" as MM
+component "Embedding Pipeline" as EP
+database "Versioned Vector Index" as VI
+component "Hybrid Retriever" as RET
+component "Reranker" as RR
+component "Citation Builder" as CB
+component "Health LLM" as LLM
+component "Clinical Output Validator" as VAL
+component "Veterinary Review Queue" as VR
+S1 --> LR
+S2 --> LR
+S3 --> LR
+LR --> CH
+CH --> MM : tür, yaş, konu, ülke, tarih, kaynak
+MM --> EP
+EP --> VI
+VI --> RET
+RET --> RR
+RR --> LLM : sınırlı bağlam + kaynak kimliği
+LLM --> CB
+CB --> VAL
+VAL --> VR : düşük güven / çelişki / yüksek risk
+VAL --> LLM : şema veya kaynak hatası
+note bottom
+Yalnız onaylı ve güncel kaynaklar indekslenir.
+Her öneri kaynak kimliği ve güncellik tarihi taşır.
+Kaynak bulunamazsa model tahmin yürütmez; güvenli fallback verir.
+İlaç dozu, kesin tanı ve acil gecikmeye yol açacak metin yasaktır.
+end note
+@enduml

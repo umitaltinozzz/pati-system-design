@@ -1,0 +1,30 @@
+@startuml
+title Pati — Kategori, Hizmet ve İçerik Kataloğu Yönetişimi
+skinparam componentStyle rectangle
+skinparam shadowing false
+component "Catalog Admin" as Admin
+component "Draft Workspace" as Draft
+component "Validation" as Val
+component "Approval Workflow" as Approve
+database "Versioned Catalog" as Cat
+component "Migration Planner" as Mig
+component "Search Reindex" as Reindex
+component "Client Compatibility" as Compat
+Admin --> Draft : kategori/alan/seçenek/politika değişikliği
+Draft --> Val
+Val --> Val : benzersiz slug, çeviri, tip, zorunluluk
+Val --> Compat : eski mobil sürüm davranışı
+Compat --> Approve
+Approve --> Cat : publish version + effective_at
+Cat --> Mig : mevcut hizmetleri eşle
+Mig --> Mig : dry-run + etki sayısı + rollback
+Mig --> Reindex
+Reindex --> Cat : yayın doğrulama
+note bottom
+Silme yerine pasifleştirme ve replacement_id kullanılır.
+Dinamik alanların türü geriye uyumsuz değiştirilemez;
+yeni alan/sürüm açılır ve veri göçü planlanır.
+Kategori, iptal politikası, belge gereksinimi ve komisyon
+değişiklikleri ayrı onay ve yürürlük tarihi taşır.
+end note
+@enduml

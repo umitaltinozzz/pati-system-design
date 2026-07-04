@@ -1,0 +1,33 @@
+@startuml
+title Pati — Fiyat, Paket, Promosyon ve Komisyon Motoru
+skinparam componentStyle rectangle
+skinparam shadowing false
+component "Pricing Request" as Req
+component "Base Price" as Base
+component "Rule Engine" as Rule
+component "Promotion Engine" as Promo
+component "Commission Engine" as Comm
+component "Tax Calculator" as Tax
+component "Quote Builder" as Quote
+database "Versioned Price Book" as PB
+database "Coupon / Budget Ledger" as CL
+database "Provider Contract" as PC
+Req --> Base
+PB --> Base : hizmet + süre + varyant
+Base --> Rule
+Rule --> Rule : gece/hafta sonu/acil/boyut/mesafe/ek hizmet
+Rule --> Promo
+Promo --> CL : uygunluk + kullanım + bütçe rezervasyonu
+Promo --> Comm
+PC --> Comm : kategori/sağlayıcı oranı
+Comm --> Tax
+Tax --> Quote
+Quote --> Req : kalemler + süre + policy_version
+note bottom
+Teklif; brüt hizmet, ek ücret, indirim, vergi,
+platform komisyonu ve kullanıcı toplamını ayrı gösterir.
+Kupon kullanımı ödeme ile atomikleşir; başarısız işlemde bütçe iade edilir.
+Sağlayıcı fiyatı geriye dönük değişmez; rezervasyon teklif sürümünü saklar.
+Karanlık kalıp fiyatlama ve gizli ücret yasaktır.
+end note
+@enduml

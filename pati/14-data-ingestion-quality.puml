@@ -1,0 +1,39 @@
+@startuml
+title Pati — İşletme Veri Toplama ve Kalite Pipeline'ı
+skinparam componentStyle rectangle
+skinparam shadowing false
+cloud "Açık web / dizinler" as S1
+cloud "Harita / yerel veri" as S2
+file "CSV / operatör girişi" as S3
+queue "Raw Ingestion Queue" as Q
+database "Raw immutable store" as RAW
+component "Parser / Normalizer" as N
+component "PII & policy filter" as P
+component "Entity resolution" as E
+component "Quality scorer" as QS
+component "Human review queue" as HR
+database "Candidate business" as C
+component "VoIP verification" as V
+database "Verified business" as B
+component "Search index" as IDX
+S1 --> Q : source_url + fetched_at
+S2 --> Q
+S3 --> Q
+Q --> RAW : ham veri + checksum
+RAW --> N : isim, telefon, adres, kategori
+N --> P : gereksiz/hassas alanı kaldır
+P --> E : normalize telefon/adres
+E --> C : yeni veya mevcut adayla birleştir
+E --> HR : belirsiz eşleşme
+C --> QS : tamlık + güncellik + kaynak güveni
+QS --> V : eşik üstü ve telefon mevcut
+QS --> HR : düşük skor / çelişki
+V --> B : işletme teyidi + izin
+B --> IDX : yalnız yayınlanabilir alanlar
+HR --> C : düzelt / birleştir / reddet
+note bottom
+Her alan için provenance tutulur: kaynak, zaman, güven skoru.
+robots.txt/şartlar, silme talebi, yeniden doğrulama süresi
+ve kişisel veri minimizasyonu pipeline politikasının parçasıdır.
+end note
+@enduml

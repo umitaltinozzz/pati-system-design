@@ -1,0 +1,44 @@
+@startuml
+title Pati — VoIP Doğrulama ve WhatsApp İzin Zinciri
+skinparam shadowing false
+|Operasyon|
+start
+:Arama kuyruğundan işletme seç;
+|Platform|
+:Arama amacı, hukuki dayanak ve mevcut izinleri kontrol et;
+:VoIP sağlayıcısından maskeli arama başlat;
+|Operasyon|
+if (Ulaşıldı mı?) then (Evet)
+ :Kimlik ve işletme bilgilerini doğrula;
+ :Bilgilendirme metnini oku;
+ if (WhatsApp izni verildi mi?) then (Evet)
+  :Amaç + kanal + kaynak + zaman ile açık izin kaydet;
+ else (Hayır)
+  :RET kaydı oluştur;
+ endif
+ :Çağrı sonucu, kişi ve notu kaydet;
+else (Hayır)
+ :Meşgul / cevapsız / yanlış numara / tekrar arama kodu;
+endif
+|Platform|
+:Arama kaydını değiştirilemez audit'e yaz;
+if (WhatsApp gönderimi istendi mi?) then (Evet)
+ :Aktif izin, amaç ve template kontrolü;
+ if (Gönderim uygun mu?) then (Evet)
+  :Onaylı template ile mesaj gönder;
+  :Provider message_id ve teslim durumunu kaydet;
+ else (Hayır)
+  :Gönderimi politika motorunda engelle;
+ endif
+endif
+if (Opt-out geldi mi?) then (Evet)
+ :İzni iptal et ve suppression list'e ekle;
+ :Bekleyen pazarlama mesajlarını iptal et;
+endif
+stop
+note right
+İşlemsel bildirim ve pazarlama amaçları ayrıdır.
+İzin geri alımı anında uygulanır; yeniden izin kanıtı olmadan
+operatör veya admin suppression kaydını aşamaz.
+end note
+@enduml

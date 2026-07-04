@@ -1,0 +1,61 @@
+@startuml
+title Pati — Üretim Dağıtım ve Güvenlik Mimarisi
+skinparam shadowing false
+node "Kullanıcı cihazı" {
+ component "Mobil uygulama / PWA" as Mobile
+}
+node "Sağlayıcı ve yönetim" {
+ component "İşletme Web" as Biz
+ component "Admin / Operasyon Web" as Adm
+}
+cloud "CDN / Edge" {
+ component "TLS + CDN" as CDN
+ component "WAF + Rate Limit" as WAF
+}
+cloud "Uygulama ağı — private subnet" {
+ node "API kümesi" {
+  component "API / BFF" as API
+  component "Auth / RBAC" as Auth
+ }
+ node "Worker kümesi" {
+  component "Rezervasyon Worker" as RW
+  component "Bildirim Worker" as NW
+  component "Import / AI Worker" as IW
+ }
+ database "Primary PostgreSQL" as DB
+ database "Read Replica / Analytics" as RR
+ component "Redis Cache / Lock" as Redis
+ queue "Message Queue + DLQ" as MQ
+ component "Object Storage + AV Scan" as OBJ
+ component "Search / Geo Index" as Search
+ component "Secrets / KMS" as KMS
+ component "Central Audit / Metrics / Alerts" as OBS
+}
+cloud "Harici Sağlayıcılar" as EXT
+Mobile --> CDN
+Biz --> CDN
+Adm --> CDN
+CDN --> WAF
+WAF --> API
+API --> Auth
+API --> DB
+API --> Redis : slot kilidi / idempotency
+API --> MQ : async işler
+API --> OBJ : signed upload
+API --> Search
+RW --> MQ
+NW --> MQ
+IW --> MQ
+RW --> DB
+NW --> EXT
+IW --> EXT
+DB --> RR : replikasyon
+API --> KMS : secret / şifreleme
+API --> OBS
+RW --> OBS
+Adm --> OBS : ayrıcalıklı işlem audit
+note bottom
+Prod / staging ayrımı; otomatik yedek + PITR;
+sağlık verisi şifreli; yönetim erişimi MFA ve IP politikası.
+end note
+@enduml

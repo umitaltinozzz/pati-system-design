@@ -1,0 +1,61 @@
+@startuml
+title Pati — Hizmet Dikeyleri ve Ortak Platform Yetkinlikleri
+skinparam componentStyle rectangle
+skinparam shadowing false
+package "Hizmet Dikeyleri" {
+ [Veteriner / Acil] as V
+ [Pet Kuaför] as G
+ [Walker / Evde Bakım] as W
+ [Pet Hotel / Pansiyon] as H
+ [Eğitmen] as T
+ [Pet Taksi] as X
+ [Sigorta Yönlendirme] as I
+ [Mama / Ürün Yönlendirme] as C
+}
+package "Ortak İşlem Çekirdeği" {
+ [Kimlik / Pet Profili] as P1
+ [Keşif / Geo Search] as P2
+ [Hizmet Kataloğu] as P3
+ [Takvim / Kapasite] as P4
+ [Rezervasyon] as P5
+ [Ödeme / Hak Ediş] as P6
+ [Mesaj / Bildirim] as P7
+ [Yorum / Güven] as P8
+}
+package "Dikey Eklentiler" {
+ [Sağlık Kaydı / Aşı] as E1
+ [Acil Triyaj] as E2
+ [Rota / Canlı Konum] as E3
+ [Oda / Kafes Kapasitesi] as E4
+ [Paket / Seans Planı] as E5
+ [Araç / Taşıma Koşulu] as E6
+ [Poliçe Teklifi / Açık Rıza] as E7
+}
+V --> E1
+V --> E2
+W --> E3
+X --> E3
+H --> E4
+T --> E5
+X --> E6
+I --> E7
+V --> P1
+G --> P3
+W --> P4
+H --> P5
+T --> P5
+X --> P6
+I --> P7
+C --> P2
+P1 --> P5
+P2 --> P3
+P3 --> P4
+P4 --> P5
+P5 --> P6
+P5 --> P7
+P5 --> P8
+note bottom
+Her dikey ortak çekirdeği yeniden kullanır; yalnız kendi
+regülasyon, kapasite, kanıt ve güvenlik kurallarını eklenti olarak taşır.
+end note
+@enduml

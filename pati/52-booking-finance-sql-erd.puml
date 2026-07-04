@@ -1,0 +1,134 @@
+@startuml
+title Pati — Rezervasyon ve Finans Ayrıntılı SQL ERD
+hide methods
+skinparam shadowing false
+entity quote {
+ * id : bigint <<PK>>
+ --
+ public_id : uuid <<UQ>>
+ owner_user_id : bigint <<FK>>
+ pet_id : bigint <<FK>>
+ service_id : bigint <<FK>>
+ starts_at : timestamptz
+ ends_at : timestamptz
+ subtotal : numeric(14,2)
+ discount : numeric(14,2)
+ tax : numeric(14,2)
+ total : numeric(14,2)
+ policy_version : int
+ expires_at : timestamptz
+}
+entity reservation {
+ * id : bigint <<PK>>
+ --
+ public_id : uuid <<UQ>>
+ quote_id : bigint <<FK,UQ>>
+ owner_user_id : bigint <<FK>>
+ pet_id : bigint <<FK>>
+ business_id : bigint <<FK>>
+ service_id : bigint <<FK>>
+ status : text
+ starts_at : timestamptz
+ ends_at : timestamptz
+ total_amount : numeric(14,2)
+ version : int
+}
+entity reservation_resource {
+ * reservation_id : bigint <<PK,FK>>
+ * resource_id : bigint <<PK,FK>>
+ --
+ starts_at : timestamptz
+ ends_at : timestamptz
+ <<EXCLUDE overlapping range>>
+}
+entity reservation_status_history {
+ * id : bigint <<PK>>
+ --
+ reservation_id : bigint <<FK>>
+ from_status : text
+ to_status : text
+ actor_user_id : bigint <<FK>>
+ created_at : timestamptz
+}
+entity payment {
+ * id : bigint <<PK>>
+ --
+ public_id : uuid <<UQ>>
+ reservation_id : bigint <<FK>>
+ provider_payment_id : text <<UQ>>
+ status : text
+ authorized_amount : numeric(14,2)
+ captured_amount : numeric(14,2)
+ refunded_amount : numeric(14,2)
+}
+entity ledger_entry {
+ * id : bigint <<PK>>
+ --
+ payment_id : bigint <<FK>>
+ reservation_id : bigint <<FK>>
+ entry_group : uuid
+ account : text
+ direction : debit_credit
+ amount : numeric(14,2)
+ reverses_entry_id : bigint <<FK>>
+ <<APPEND ONLY>>
+}
+entity payout_account {
+ * id : bigint <<PK>>
+ --
+ business_id : bigint <<FK>>
+ iban_hash : bytea
+ iban_ciphertext : bytea
+ status : text
+ cooldown_until : timestamptz
+}
+entity payout {
+ * id : bigint <<PK>>
+ --
+ business_id : bigint <<FK>>
+ payout_account_id : bigint <<FK>>
+ status : text
+ gross_amount : numeric(14,2)
+ deduction_amount : numeric(14,2)
+ net_amount : numeric(14,2)
+ scheduled_for : timestamptz
+}
+entity review {
+ * id : bigint <<PK>>
+ --
+ reservation_id : bigint <<FK,UQ>>
+ author_user_id : bigint <<FK>>
+ business_id : bigint <<FK>>
+ rating : smallint
+ moderation_status : text
+}
+entity dispute {
+ * id : bigint <<PK>>
+ --
+ reservation_id : bigint <<FK>>
+ opened_by_user_id : bigint <<FK>>
+ assigned_to_user_id : bigint <<FK>>
+ status : text
+ resolution : text
+ due_at : timestamptz
+}
+entity dispute_evidence {
+ * id : bigint <<PK>>
+ --
+ dispute_id : bigint <<FK>>
+ submitted_by_user_id : bigint <<FK>>
+ evidence_type : text
+ object_key : text
+ checksum_sha256 : char(64)
+}
+quote ||--|| reservation
+reservation ||--o{ reservation_resource
+reservation ||--o{ reservation_status_history
+reservation ||--o{ payment
+payment ||--o{ ledger_entry
+reservation ||--o{ ledger_entry
+payout_account ||--o{ payout
+reservation ||--o| review
+reservation ||--o{ dispute
+dispute ||--o{ dispute_evidence
+@enduml

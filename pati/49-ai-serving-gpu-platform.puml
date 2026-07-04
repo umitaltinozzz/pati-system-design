@@ -1,0 +1,43 @@
+@startuml
+title Pati — AI Serving, GPU Kuyruklama ve Dayanıklılık
+skinparam componentStyle rectangle
+skinparam shadowing false
+component "AI Gateway" as GW
+component "Admission Control" as AC
+component "Model Router" as R
+queue "Realtime Queue" as RT
+queue "Batch / 3D Queue" as BQ
+component "CPU Inference Pool" as CPU
+component "GPU Online Pool" as GPU
+component "GPU Batch Pool" as BGPU
+component "Autoscaler" as AS
+component "Model Cache" as Cache
+database "Artifact Registry" as AR
+component "Result Store" as RS
+component "Cost / Latency Monitor" as MON
+component "Circuit Breaker" as CB
+GW --> AC : tenant/user quota
+AC --> R : task + SLA + budget
+R --> RT : sağlık/vision düşük gecikme
+R --> BQ : 3D/maskot async job
+RT --> CPU : küçük model / kural
+RT --> GPU : LLM/vision
+BQ --> BGPU : reconstruction/texture
+AR --> Cache
+Cache --> CPU
+Cache --> GPU
+Cache --> BGPU
+CPU --> RS
+GPU --> RS
+BGPU --> RS
+AS --> GPU : queue depth + utilization
+AS --> BGPU
+MON --> CB : hata/maliyet/gecikme
+CB --> R : fallback / model kapatma
+note bottom
+Öncelik: acil sağlık yönlendirmesi > interaktif kalite kontrolü >
+öneri > 3D/maskot batch. Kullanıcı başına kota, job iptali,
+checkpoint, timeout ve tahmini bitiş süresi vardır.
+GPU maliyeti model/sürüm/özellik/tenant bazında ölçülür.
+end note
+@enduml

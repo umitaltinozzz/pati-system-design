@@ -1,0 +1,41 @@
+@startuml
+title Pati — Walker Hizmeti, Canlı Güvenlik ve Olay Yönetimi
+skinparam shadowing false
+|Pet sahibi|
+start
+:Pet, süre, rota tercihi ve özel notları seç;
+:Alerji, davranış, tasma ve acil kişi bilgisini doğrula;
+|Platform|
+:Doğrulanmış walker + hizmet bölgesi + uygunluk eşleştir;
+:Rezervasyon ve korumalı ödeme oluştur;
+|Walker|
+:Talebi ve minimum gerekli pet bilgisini gör;
+:Kabul et;
+:Teslim alma OTP / QR doğrula;
+|Platform|
+:Başlangıç zamanı ve konumu kaydet;
+:Konum paylaşımı için hizmet-süreli açık rıza aktive et;
+|Walker|
+:Yürüyüşü başlat;
+repeat
+ :Konum / süre / mesafe güncelle;
+ |Platform|
+ :Sapma, bağlantı kesilmesi ve uzun hareketsizlik kontrolü;
+ if (Risk olayı?) then (Evet)
+  :Walker ve pet sahibine uyarı;
+  if (Acil mi?) then (Evet)
+   :Acil kişi / veteriner / operasyon eskalasyonu;
+   :Olay kaydı ve kanıt zaman çizelgesi;
+  endif
+ endif
+ |Walker|
+repeat while (Hizmet sürüyor?) is (Evet)
+:Fotoğraf/not ekle ve teslim noktasına dön;
+:Teslim OTP / QR doğrula;
+|Platform|
+:Bitiş, rota özeti ve kanıtları mühürle;
+:Konum takibini kapat ve retention politikasını uygula;
+|Pet sahibi|
+:Tamamlanmayı onayla / itiraz et / yorumla;
+stop
+@enduml

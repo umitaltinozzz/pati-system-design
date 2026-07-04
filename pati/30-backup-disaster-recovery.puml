@@ -1,0 +1,43 @@
+@startuml
+title Pati — Yedekleme, Felaket Kurtarma ve İş Sürekliliği
+skinparam shadowing false
+node "Primary Region" {
+ component "API / Workers" as A1
+ database "PostgreSQL Primary" as DB1
+ component "Object Storage" as O1
+ queue "Queue" as Q1
+ component "Secrets / KMS" as K1
+}
+node "Recovery Region" {
+ component "Warm Standby" as A2
+ database "Cross-region Replica" as DB2
+ component "Replicated Objects" as O2
+ queue "Recovery Queue" as Q2
+ component "Recovery KMS" as K2
+}
+cloud "Immutable Backup Vault" as Vault
+component "DNS / Traffic Manager" as DNS
+component "Synthetic Recovery Tests" as Test
+A1 --> DB1
+A1 --> O1
+A1 --> Q1
+DB1 --> DB2 : continuous replication
+O1 --> O2 : versioned replication
+DB1 --> Vault : encrypted full + WAL/PITR
+O1 --> Vault : lifecycle snapshot
+K1 ..> K2 : controlled key recovery
+DNS --> A1 : normal
+DNS ..> A2 : failover
+Test --> Vault : restore verification
+Test --> A2 : isolated smoke test
+note bottom
+Hedef sınıfları:
+• Rezervasyon / ödeme: RPO ≤ 5 dk, RTO ≤ 30 dk
+• Arama / içerik: RPO ≤ 24 saat, RTO ≤ 4 saat
+• Audit / ledger: veri kaybı toleransı yok; sağlayıcı mutabakatı ile kurtarma
+
+Üç ayda bir bölgesel tatbikat; aylık örnek restore;
+yedek erişimi ayrı rol, silme korumalı ve üretim hesabından izole.
+Failover sonrası ödeme/webhook ve queue tekrarları idempotent işlenir.
+end note
+@enduml

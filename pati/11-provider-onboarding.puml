@@ -1,0 +1,50 @@
+@startuml
+title Pati — Sağlayıcı Onboarding, Belge ve Doğrulama
+skinparam shadowing false
+|Sağlayıcı|
+start
+:Hesap ve yetkili kişi oluştur;
+:İşletme türü / kategori seç;
+:Vergi, ruhsat, oda kaydı,
+kimlik ve adres belgelerini yükle;
+:Hizmet, fiyat, bölge ve çalışma saati ekle;
+|Platform|
+:Dosya tipi, virüs, boyut ve bütünlük kontrolü;
+:Vergi/telefon/e-posta tekilliği kontrolü;
+:Risk skoru ve eksik alan kontrolü;
+if (Otomatik kontrol geçti mi?) then (Evet)
+ |Operasyon|
+ :VoIP doğrulama kuyruğuna al;
+else (Hayır)
+ |Sağlayıcı|
+ :Eksik/uygunsuz belgeyi düzelt;
+ |Platform|
+ :Yeniden kontrol et;
+endif
+|Operasyon|
+:Yetkili kişiyi ara;
+:İşletme, hizmet, fiyat ve iletişim iznini teyit et;
+:Çağrı sonucu + not + izin kaydı oluştur;
+if (Manuel inceleme sonucu?) then (Onay)
+ |Admin|
+ :Kategoriye göre lisans ve son kullanma tarihi kontrolü;
+ :Doğrulanmış rozeti ve yayın yetkisini ver;
+ |Platform|
+ :Profil ve hizmetleri arama indeksine yayınla;
+ :Belge bitiş tarihleri için hatırlatıcı kur;
+else (Onay değil)
+ if (Ek bilgiyle çözülebilir mi?) then (Evet)
+  |Sağlayıcı|
+  :Ek belge / açıklama gönder;
+ else (Ret)
+  |Platform|
+  :Gerekçeli ret ve itiraz penceresi oluştur;
+  stop
+ endif
+endif
+|Sağlayıcı|
+:Takvim ve ödeme hesabını aktive et;
+|Platform|
+:İlk rezervasyona hazır durumuna geçir;
+stop
+@enduml

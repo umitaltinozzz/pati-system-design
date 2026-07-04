@@ -1,0 +1,45 @@
+@startuml
+title Pati — Veteriner Randevusu ve Sağlık Kaydı Yaşam Döngüsü
+skinparam shadowing false
+|Pet sahibi|
+start
+:Pet ve şikâyet nedeni seç;
+:Acil kırmızı bayrak sorularını yanıtla;
+|Platform|
+if (Acil risk?) then (Evet)
+ :Online rezervasyon yerine acil veteriner yönlendir;
+ :Konum, açık saat ve telefon göster;
+ stop
+endif
+:Uygun veteriner / klinik / branş / saat listele;
+|Pet sahibi|
+:Randevuyu ve veri paylaşım kapsamını onayla;
+|Platform|
+:Minimum sağlık özetine süreli erişim yetkisi üret;
+|Veteriner|
+:Muayene check-in;
+:Anamnez, bulgu, işlem ve klinik notunu kaydet;
+if (Belge eklenecek mi?) then (Evet)
+ :Aşı kartı / laboratuvar / reçete / görüntü yükle;
+endif
+:Takip ve kontrol tarihi belirle;
+|Platform|
+:Kaydı sürümle, yazarı ve kaynağı mühürle;
+:Aşı/ilaç/takip hatırlatıcılarını oluştur;
+|Pet sahibi|
+:Kaydı görüntüle;
+if (Düzeltme talebi?) then (Evet)
+ :Yanlış alanı ve gerekçeyi bildir;
+ |Veteriner|
+ :Orijinali silmeden düzeltme sürümü oluştur;
+endif
+|Platform|
+:Erişim süresi bitince klinik yetkisini geri al;
+:İndirme, paylaşım ve erişimleri audit et;
+stop
+note right
+Klinik kayıt silinmez; düzeltme yeni sürümdür.
+Pet sahibi dışa aktarabilir ve kimlerin eriştiğini görebilir.
+Acil durum erişimi ayrı, gerekçeli ve denetlenebilir olmalıdır.
+end note
+@enduml

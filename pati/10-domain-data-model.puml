@@ -1,0 +1,153 @@
+@startuml
+title Pati — Çekirdek Domain Veri Modeli
+hide methods
+skinparam shadowing false
+entity users {
+ * id : uuid <<PK>>
+ --
+ role : enum
+ name : varchar
+ phone : encrypted
+ email : encrypted
+ status : enum
+ city_id : uuid
+ created_at : timestamptz
+}
+entity pets {
+ * id : uuid <<PK>>
+ --
+ * owner_id : uuid <<FK>>
+ species_id : uuid
+ breed_id : uuid
+ name : varchar
+ birth_date : date
+ weight_kg : decimal
+ allergies : encrypted jsonb
+ medications : encrypted jsonb
+}
+entity health_records {
+ * id : uuid <<PK>>
+ --
+ * pet_id : uuid <<FK>>
+ record_type : enum
+ occurred_at : timestamptz
+ provider_id : uuid
+ document_key : varchar
+ sensitivity : enum
+}
+entity businesses {
+ * id : uuid <<PK>>
+ --
+ * owner_id : uuid <<FK>>
+ category_id : uuid
+ verification_status : enum
+ status : enum
+ geo_point : geography
+ rating_avg : decimal
+ review_count : int
+}
+entity provider_documents {
+ * id : uuid <<PK>>
+ --
+ * business_id : uuid <<FK>>
+ document_type : enum
+ storage_key : varchar
+ expires_at : date
+ review_status : enum
+}
+entity services {
+ * id : uuid <<PK>>
+ --
+ * business_id : uuid <<FK>>
+ category_id : uuid
+ duration_min : int
+ min_price : money
+ max_price : money
+ service_area : geography
+ is_active : bool
+}
+entity availability_slots {
+ * id : uuid <<PK>>
+ --
+ * service_id : uuid <<FK>>
+ provider_user_id : uuid
+ starts_at : timestamptz
+ ends_at : timestamptz
+ capacity : int
+ version : int
+}
+entity reservations {
+ * id : uuid <<PK>>
+ --
+ * owner_id : uuid <<FK>>
+ * pet_id : uuid <<FK>>
+ * service_id : uuid <<FK>>
+ * slot_id : uuid <<FK>>
+ status : enum
+ quoted_amount : money
+ cancellation_policy_id : uuid
+ idempotency_key : varchar
+}
+entity payments {
+ * id : uuid <<PK>>
+ --
+ * reservation_id : uuid <<FK>>
+ provider_ref : varchar
+ authorized_amount : money
+ captured_amount : money
+ refunded_amount : money
+ status : enum
+}
+entity ledger_entries {
+ * id : uuid <<PK>>
+ --
+ * payment_id : uuid <<FK>>
+ account : enum
+ direction : debit_credit
+ amount : money
+ event_type : enum
+}
+entity reviews {
+ * id : uuid <<PK>>
+ --
+ * reservation_id : uuid <<FK, UNIQUE>>
+ * author_id : uuid <<FK>>
+ * business_id : uuid <<FK>>
+ rating : smallint
+ moderation_status : enum
+}
+entity disputes {
+ * id : uuid <<PK>>
+ --
+ * reservation_id : uuid <<FK>>
+ opened_by : uuid
+ reason_code : enum
+ status : enum
+ resolution : enum
+}
+entity consent_records {
+ * id : uuid <<PK>>
+ --
+ subject_type : enum
+ subject_id : uuid
+ channel : enum
+ purpose : enum
+ status : enum
+ source : enum
+ recorded_at : timestamptz
+}
+users ||--o{ pets : owns
+users ||--o{ businesses : manages
+pets ||--o{ health_records : has
+businesses ||--o{ provider_documents : submits
+businesses ||--o{ services : offers
+services ||--o{ availability_slots : schedules
+users ||--o{ reservations : books
+pets ||--o{ reservations : receives
+availability_slots ||--o| reservations : locks
+reservations ||--o| payments : settles
+payments ||--o{ ledger_entries : posts
+reservations ||--o| reviews : verifies
+reservations ||--o{ disputes : may_open
+users ||--o{ consent_records : grants
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+title Pati — Erişilebilirlik, Lokalizasyon ve İçerik Kalitesi
+skinparam shadowing false
+start
+:Tasarım tokenları ve semantik bileşenlerle ekran oluştur;
+:WCAG 2.2 AA hedeflerini otomatik lint/test et;
+:Klavye sırası, odak görünürlüğü ve ekran okuyucu adlarını doğrula;
+:Renk kontrastı, metin büyütme, reduced motion ve dokunma hedeflerini test et;
+:Form hata mesajını alanla programatik ilişkilendir;
+:Harita bilgisini liste alternatifiyle sun;
+:Türkçe kaynak metni ICU message formatıyla anahtarla;
+:Çoğul, cinsiyet, tarih, saat, para ve adres formatlarını locale göre üret;
+:Çeviri belleği + terminoloji sözlüğü + bağlam ekran görüntüsü;
+if (Kritik içerik?) then (Evet)
+ :Hukuk/veteriner/operasyon uzmanı insan onayı;
+endif
+:Pseudo-localization ve uzun metin taşma testi;
+:RTL hazırlığı ve dil fallback kontrolü;
+:Cihaz matrisi + yardımcı teknoloji manuel testi;
+:Release kapısında kritik erişilebilirlik hatasını engelle;
+stop
+note right
+Dinamik işletme içeriği dili etiketli saklanır.
+Makine çevirisi sağlık, hukuk ve güvenlik metnini
+insan onayı olmadan yayınlamaz.
+Telefonla destek ve sade dil erişilebilir alternatiflerdir.
+end note
+@enduml

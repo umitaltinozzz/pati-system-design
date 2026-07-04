@@ -1,0 +1,45 @@
+@startuml
+title Pati — Ayrıntılı Sistem Bağlamı
+left to right direction
+skinparam componentStyle rectangle
+skinparam shadowing false
+actor "Pet sahibi" as Owner
+actor "İşletme sahibi" as Business
+actor "Walker / Eğitmen / Taksi" as Freelance
+actor "Veteriner / Kuaför / Hotel" as Facility
+actor "Operasyon uzmanı" as Ops
+actor "Admin / Super Admin" as Admin
+rectangle "Pati Pet Care Super App" as Pati {
+ usecase "Pet profili ve sağlık kaydı" as U1
+ usecase "Hizmet keşfi ve rezervasyon" as U2
+ usecase "Korumalı ödeme ve yorum" as U3
+ usecase "İşletme, hizmet ve talep yönetimi" as U4
+ usecase "Doğrulama, izin ve uyuşmazlık" as U5
+ usecase "AI sağlık asistanı ve maskot" as U6
+}
+cloud "Ödeme kuruluşu" as Pay
+cloud "Harita / Rota" as Map
+cloud "WhatsApp Business" as WA
+cloud "VoIP / Çağrı" as Voip
+cloud "SMS / E-posta / Push" as Notify
+cloud "AI metin / görsel" as AI
+cloud "Dosya depolama" as Storage
+cloud "Harici işletme veri kaynakları" as Sources
+Owner --> U1
+Owner --> U2
+Owner --> U3
+Business --> U4
+Freelance --> U4
+Facility --> U4
+Ops --> U5
+Admin --> U5
+Owner --> U6
+Pati --> Pay : tahsilat, bloke, iade, hak ediş
+Pati --> Map : yakınlık, adres, rota
+Pati --> WA : yalnız izinli iletişim
+Pati --> Voip : işletme doğrulama
+Pati --> Notify : işlem bildirimleri
+Pati --> AI : risk yönlendirmesi / avatar
+Pati --> Storage : belge, fotoğraf, sağlık eki
+Sources --> Pati : aday işletme verisi
+@enduml

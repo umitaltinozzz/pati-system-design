@@ -1,0 +1,48 @@
+@startuml
+title Pati — AI Model Portföyü ve İstek Yönlendirme
+skinparam componentStyle rectangle
+skinparam shadowing false
+component "AI Gateway" as GW
+component "Task Classifier" as TC
+component "Policy / Consent Check" as PC
+component "PII Redaction" as PII
+component "Model Router" as R
+component "Output Validator" as OV
+component "Safety Filter" as SF
+component "Fallback Manager" as FB
+database "Model Registry" as MR
+database "Prompt / Policy Registry" as PR
+cloud "Health LLM + RAG" as H
+cloud "Vision Quality / Segmentation" as V
+cloud "3D Reconstruction / Texture" as D
+cloud "Recommendation / Ranking" as REC
+cloud "Fraud / Anomaly Models" as F
+cloud "Image / Mascot Generator" as IMG
+GW --> TC
+TC --> PC
+PC --> PII
+PII --> R
+MR --> R : approved version + capability
+PR --> R : prompt + schema + policy
+R --> H : sağlık yönlendirme
+R --> V : pet/kalite/özellik çıkarımı
+R --> D : 3D asset
+R --> REC : hizmet önerisi
+R --> F : risk skoru
+R --> IMG : 2D maskot
+H --> OV
+V --> OV
+D --> OV
+REC --> OV
+F --> OV
+IMG --> OV
+OV --> SF
+SF --> GW : güvenli şemalı çıktı
+OV --> FB : timeout / düşük güven / şema hatası
+FB --> GW : kural tabanlı veya insan inceleme
+note bottom
+Tek gateway; görev bazlı veri minimizasyonu, bölge/model politikası,
+maliyet ve gecikme bütçesi uygular. Sağlık ve finans kararları
+yalnız model çıktısıyla otomatik ve geri döndürülemez işlem yapmaz.
+end note
+@enduml

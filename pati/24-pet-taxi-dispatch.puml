@@ -1,0 +1,41 @@
+@startuml
+title Pati — Pet Taksi Teklif, Atama ve Canlı Yolculuk
+skinparam shadowing false
+|Kullanıcı|
+start
+:Pet, yolcu eşlik durumu, alış/varış adresi ve zaman seç;
+:Taşıma çantası, boyut, hareket kısıtı ve özel not gir;
+|Platform|
+:Mesafe, süre, trafik, bekleme ve ek hizmet fiyatla;
+:Uygun araç tipi ve sürücü belgelerini filtrele;
+:Teklif süresi ve iptal kuralı üret;
+|Kullanıcı|
+:Teklifi ve ödemeyi onayla;
+|Dispatch|
+:Yakınlık + uygunluk + puan + yük dengesiyle aday sırala;
+repeat
+ :Sürücüye süreli teklif gönder;
+repeat while (Kabul edildi mi?) is (Hayır)
+if (Sürücü bulundu mu?) then (Evet)
+ :Araç/sürücü bilgisini kullanıcıyla paylaş;
+else (Hayır)
+ :Yetkilendirmeyi iptal et ve alternatif zaman sun;
+ stop
+endif
+|Sürücü|
+:Alış noktasına varış geofence'i;
+:Pet teslim OTP/QR ve güvenlik kontrolü;
+:Yolculuğu başlat;
+|Platform|
+:Canlı konum ve ETA paylaş;
+:Beklenmeyen duruş / rota sapması / bağlantı kaybı izle;
+|Sürücü|
+:Varış geofence'i ve teslim OTP/QR;
+|Platform|
+:Mesafe/bekleme farkını kurala göre kapat;
+:Ödemeyi tahsil et, hak edişi oluştur;
+:Konum retention süresini başlat;
+|Kullanıcı|
+:Yolculuk ve pet güvenliği değerlendirmesi;
+stop
+@enduml

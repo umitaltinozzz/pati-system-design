@@ -1,0 +1,35 @@
+@startuml
+title Pati — Yorum, Şikâyet, Moderasyon ve Uyuşmazlık
+skinparam shadowing false
+start
+:Hizmet tamamlandı;
+if (Doğrulanmış rezervasyon?) then (Evet)
+ :Tek rezervasyon için tek yorum hakkı aç;
+ :Puan, metin ve opsiyonel medya al;
+ :PII, hakaret, spam, sahtecilik ve medya taraması;
+ if (Otomatik politika sonucu?) then (Temiz)
+  :Yorumu yayınla;
+ elseif (Şüpheli)
+  :Manuel moderasyon kuyruğu;
+ else (Açık ihlal)
+  :Gizle ve gerekçeyi bildir;
+ endif
+else (Hayır)
+ :Yorum oluşturmayı engelle;
+endif
+if (Şikâyet / itiraz var mı?) then (Evet)
+ :Reason code + açıklama + kanıt al;
+ :SLA, önem ve güvenlik riskine göre önceliklendir;
+ if (Acil güvenlik olayı?) then (Evet)
+  :İşletme/kullanıcıyı geçici kısıtla;
+  :Operasyon ve gerekirse hukuki eskalasyon;
+ endif
+ :Karşı tarafa cevap hakkı ver;
+ :Rezervasyon, mesaj, ödeme ve audit zaman çizelgesini topla;
+ :Admin kararı: reddet / içerik kaldır / uyarı / askı / finansal çözüm;
+ :Gerekçeli karar ve itiraz süresi bildir;
+endif
+:Puan ortalamasını yalnız yayınlanmış yorumlarla yeniden hesapla;
+:Sahte yorum ağları ve olağandışı puan değişimi için risk sinyali üret;
+stop
+@enduml

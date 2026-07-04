@@ -1,0 +1,35 @@
+@startuml
+title Pati — Mobil/Web 3D Görüntüleme ve Etkileşim Runtime'ı
+skinparam componentStyle rectangle
+skinparam shadowing false
+actor Kullanıcı
+component "Avatar Screen" as UI
+component "Capability Detector" as CAP
+component "Asset Manifest Loader" as MAN
+component "glTF Renderer" as REN
+component "Animation State Machine" as ASM
+component "Accessory System" as ACC
+component "AR Placement" as AR
+component "Fallback 2D" as FB
+component "Telemetry" as TEL
+cloud "CDN" as CDN
+database "Signed Asset Manifest" as DB
+Kullanıcı --> UI
+UI --> CAP : GPU/RAM/WebGL/AR desteği
+CAP --> MAN : uygun LOD + texture format
+MAN --> DB : pet avatar sürümü
+MAN --> CDN : signed asset URL
+CDN --> REN
+REN --> ASM : idle/walk/sit/happy/sleep
+REN --> ACC : tasma, kıyafet, rozet
+REN --> AR : ölçekli zemin yerleşimi
+CAP --> FB : destek yok / düşük güç / reduced motion
+REN --> TEL : load time, FPS, crash, memory
+FB --> TEL
+note bottom
+İlk görünüm bütçesi: küçük thumbnail + progress;
+asset streaming, KTX2/Basis texture ve Draco/Meshopt sıkıştırma.
+Animasyon kullanıcının reduced-motion tercihine uyar.
+AR ölçüsü “yaklaşık” olarak etiketlenir; tıbbi ölçüm değildir.
+end note
+@enduml

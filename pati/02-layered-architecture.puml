@@ -1,0 +1,70 @@
+@startuml
+title Pati — Ayrıntılı Katmanlı / Domain Mimarisi
+skinparam componentStyle rectangle
+skinparam shadowing false
+rectangle "Deneyim katmanı" {
+ [Pet sahibi mobil/web] as C1
+ [İşletme paneli] as C2
+ [Operasyon paneli] as C3
+ [Admin paneli] as C4
+}
+rectangle "Erişim ve uygulama katmanı" {
+ [WAF / API Gateway] as G
+ [Auth / RBAC / Session] as Auth
+ [BFF / API] as API
+ [Workflow / Saga] as WF
+ [Notification Orchestrator] as NO
+}
+rectangle "İş alanları" {
+ [Kullanıcı ve Pet] as D1
+ [Sağlık Kayıtları] as D2
+ [İşletme ve Doğrulama] as D3
+ [Hizmet / Takvim / Uygunluk] as D4
+ [Rezervasyon] as D5
+ [Ödeme / Bloke / Hak ediş] as D6
+ [Yorum / Şikâyet / Uyuşmazlık] as D7
+ [CRM / VoIP / İletişim İzni] as D8
+ [AI Sağlık / Maskot] as D9
+}
+rectangle "Veri ve platform" {
+ database "PostgreSQL\nalan bazlı erişim" as DB
+ [Object Storage] as OBJ
+ [Search / Geo Index] as SEARCH
+ [Queue / Scheduler] as Q
+ [Cache / Rate limit] as CACHE
+ [Audit / Log / Metrics] as OBS
+}
+C1 --> G
+C2 --> G
+C3 --> G
+C4 --> G
+G --> Auth
+G --> API
+API --> D1
+API --> D3
+API --> D4
+API --> D5
+WF --> D5
+WF --> D6
+WF --> D7
+NO --> Q
+D1 --> D2
+D3 --> D8
+D5 --> D4 : uygunluk kilidi
+D5 --> D6 : ödeme durumu
+D5 --> D7 : hizmet sonrası
+D2 --> D9 : açık rıza + minimum veri
+D1 --> DB
+D3 --> DB
+D5 --> DB
+D6 --> DB
+D2 --> OBJ
+D3 --> SEARCH
+D4 --> SEARCH
+D8 --> Q
+D9 --> Q
+API --> CACHE
+C4 --> OBS
+D6 --> OBS
+D7 --> OBS
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+title Pati API — Kayıt, Giriş ve Refresh Rotation
+skinparam shadowing false
+actor Client
+participant "Auth Controller" as C
+participant "Identity Module" as I
+database "PostgreSQL" as DB
+participant "Risk Engine" as R
+participant "Token Service" as T
+queue "Outbox" as O
+Client -> C : POST /v1/auth/register
+C -> I : validate + hash identifier
+I -> DB : unique user + credential transaction
+I -> O : UserRegistered
+C --> Client : 201 access + rotating refresh
+Client -> C : POST /v1/auth/login
+C -> R : device/network/account signals
+R --> C : allow / step-up / deny
+C -> I : verify credential
+I -> T : issue token family
+T -> DB : refresh hash + family + device
+C --> Client : 200 tokens
+Client -> C : POST /v1/auth/refresh
+C -> T : verify refresh hash/family
+alt Valid and unused
+ T -> DB : revoke old + store next token atomically
+ T --> C : new access + refresh
+ C --> Client : 200 tokens
+else Reuse detected
+ T -> DB : revoke entire token family
+ T -> O : SecuritySessionCompromised
+ C --> Client : 401 TOKEN_REUSE_DETECTED
+end
+@enduml

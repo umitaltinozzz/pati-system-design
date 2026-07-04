@@ -1,0 +1,36 @@
+@startuml
+title Pati — Model Eğitimi, Değerlendirme ve MLOps Yaşam Döngüsü
+skinparam shadowing false
+start
+:Use-case, kullanıcı etkisi ve kabul metriğini tanımla;
+:Veri envanteri, rıza, lisans ve amaç uyumluluğu incele;
+:Ham veriyi erişim kontrollü snapshot'a al;
+:Tekilleştirme, kalite, PII temizleme ve veri kartı üret;
+:Train / validation / test'i pet veya işletme bazında ayır;
+:Baseline ve aday modeli eğit;
+:Offline kalite + gecikme + maliyet ölç;
+:Tür, ırk, yaş, cihaz ve dil segmentlerinde hata analizi;
+:Safety / adversarial / red-team testleri;
+if (Model card çıkış kapısı geçti mi?) then (Evet)
+ :Registry'ye immutable artifact + lineage kaydet;
+ :Shadow inference;
+ :Canary yüzde 1–5;
+ :Online KPI ve guardrail izle;
+ if (Drift veya zarar sinyali?) then (Evet)
+  :Otomatik rollback;
+  :Olay ve kök neden incelemesi;
+ else (Hayır)
+  :Kademeli rollout;
+ endif
+else (Hayır)
+ :Veri/model/politika düzeltmesi;
+endif
+:Performans, drift, veri şeması ve maliyeti sürekli izle;
+:Periyodik yeniden değerlendirme veya modeli emekliye ayır;
+stop
+note right
+Her sürüm: model card, data card, eval set sürümü,
+kod/parametre hash'i, owner, onay, kullanım sınırı,
+rollback hedefi ve son kullanma tarihi taşır.
+end note
+@enduml

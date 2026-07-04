@@ -1,0 +1,62 @@
+@startuml
+title Pati — Modüler Monolit Servis Sınırları
+skinparam componentStyle rectangle
+skinparam shadowing false
+package "Public API" {
+ [REST Controllers / OpenAPI] as REST
+ [Auth / RBAC / Validation] as AUTH
+}
+package "Core Modules" {
+ [Identity] as ID
+ [Pet / Health] as PET
+ [Provider] as PROV
+ [Catalog] as CAT
+ [Availability] as AV
+ [Booking] as BOOK
+ [Payment / Ledger] as PAY
+ [Trust / Dispute] as TRUST
+ [Consent / CRM] as CRM
+}
+package "Separate Deployments" {
+ [Notification Worker] as NOTIF
+ [Import Worker] as IMP
+ [AI / 3D Gateway] as AI
+}
+package "Platform" {
+ [Outbox] as OUT
+ [NATS Events] as BUS
+ [Temporal Workflows] as WF
+ [Audit] as AUDIT
+}
+REST --> AUTH
+REST --> ID
+REST --> PET
+REST --> PROV
+REST --> CAT
+REST --> AV
+REST --> BOOK
+REST --> PAY
+REST --> TRUST
+REST --> CRM
+BOOK --> AV : application port
+BOOK --> PAY : application port
+BOOK --> WF : timeout/saga
+PROV --> CAT : verified provider port
+CRM --> NOTIF : event only
+PET --> AI : async job port
+BOOK --> OUT
+PAY --> OUT
+TRUST --> OUT
+OUT --> BUS
+BUS --> NOTIF
+BUS --> IMP
+BUS --> AI
+ID --> AUDIT
+PAY --> AUDIT
+TRUST --> AUDIT
+note bottom
+Modüller başka modülün repository veya tablosuna yazamaz.
+Tek transaction yalnız modül verisi + outbox içerir.
+Harici servis çağrısı açık DB transaction içinde yapılmaz.
+end note
+@enduml

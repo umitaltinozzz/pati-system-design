@@ -1,0 +1,28 @@
+@startuml
+title Pati — Kimlik, Oturum ve Hesap Yaşam Döngüsü
+skinparam shadowing false
+[*] --> Ziyaretçi
+Ziyaretçi --> KayıtBaşladı : telefon/e-posta/sosyal giriş
+KayıtBaşladı --> DoğrulamaBekliyor : OTP veya magic link
+DoğrulamaBekliyor --> Aktif : doğrulama başarılı
+DoğrulamaBekliyor --> Kilitli : deneme limiti / risk
+Aktif --> EkDoğrulama : ödeme, sağlık paylaşımı, admin işlem
+EkDoğrulama --> Aktif : step-up MFA başarılı
+Aktif --> RiskliOturum : yeni cihaz / anormal konum / token tekrar
+RiskliOturum --> Aktif : kullanıcı teyidi
+RiskliOturum --> Kilitli : doğrulanamadı
+Aktif --> Askıda : politika ihlali / risk inceleme
+Askıda --> Aktif : itiraz kabul
+Askıda --> Kapatıldı : kalıcı yaptırım
+Aktif --> SilmeBekliyor : kullanıcı silme talebi
+SilmeBekliyor --> Aktif : bekleme süresinde iptal
+SilmeBekliyor --> Anonimleştirildi : hukuki saklama ayrıştırıldı
+Kilitli --> Aktif : güvenli kurtarma
+Kapatıldı --> [*]
+Anonimleştirildi --> [*]
+note right of Aktif
+Access token kısa ömürlü; refresh rotation ve reuse detection.
+Cihaz/oturum listesi, uzaktan çıkış ve güvenlik bildirimi.
+Sağlayıcı/admin hesaplarında zorunlu MFA.
+end note
+@enduml

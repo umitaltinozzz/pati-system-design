@@ -1,0 +1,35 @@
+@startuml
+title Pati API — Ödeme Webhook, Ledger ve Rezervasyon
+skinparam shadowing false
+participant "Payment Provider" as PSP
+participant "Webhook API" as API
+participant "Replay Store" as REP
+participant "Payment Module" as PAY
+database "PostgreSQL" as DB
+queue "Outbox" as OUT
+participant "Booking Workflow" as BOOK
+PSP -> API : POST /webhooks/payments/{provider}\nID + timestamp + HMAC
+API -> API : raw body signature + clock skew
+alt Invalid signature
+ API --> PSP : 401
+else Valid
+ API -> REP : claim provider + eventId
+ alt Already processed
+  API --> PSP : 204
+ else New
+  API -> PAY : normalize provider event
+  PAY -> DB : begin
+  PAY -> DB : lock payment by provider id
+  PAY -> DB : update payment + append balanced ledger entries
+  PAY -> OUT : PaymentAuthorized/Captured/Refunded
+  PAY -> DB : commit
+  API --> PSP : 204
+  OUT -> BOOK : event delivery
+  BOOK -> DB : guarded reservation state transition
+ end
+end
+note over PSP,BOOK
+Webhook body işlenmeden önce imza doğrulanır.
+Ledger update/delete yoktur; düzeltme ters kayıtla yapılır.
+end note
+@enduml

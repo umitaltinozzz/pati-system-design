@@ -1,0 +1,33 @@
+@startuml
+title Pati API — AI Sağlık / 3D Asenkron Job
+skinparam shadowing false
+actor Client
+participant "Public API" as API
+participant "Consent Module" as CONS
+participant "Upload Service" as UP
+database "PostgreSQL" as DB
+queue "NATS Job Queue" as Q
+participant "AI Gateway" as AI
+participant "Model Router" as MR
+participant "GPU/Batch Worker" as GPU
+database "S3" as S3
+Client -> API : create upload session
+API -> UP : signed URLs + content policy
+UP --> Client : signed URLs
+Client -> S3 : source media upload
+Client -> API : POST /pets/{id}/3d-jobs\nIdempotency-Key
+API -> CONS : active consent + purpose + pet ownership
+CONS --> API : allow
+API -> DB : ai_job queued + outbox
+API --> Client : 202 jobId
+DB -> Q : AiJobQueued
+Q -> AI : task + object keys + model policy
+AI -> MR : approved model/version + budget
+MR -> GPU : execute reconstruction pipeline
+GPU -> S3 : GLB/LOD/texture/provenance
+GPU -> DB : completed + result object key
+GPU -> Q : AiJobCompleted
+Client -> API : GET /jobs/{jobId}
+API -> DB : ownership scoped job
+API --> Client : completed + signed result URL
+@enduml

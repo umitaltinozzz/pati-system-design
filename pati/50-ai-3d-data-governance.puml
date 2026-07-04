@@ -1,0 +1,40 @@
+@startuml
+title Pati — AI ve 3D Veri Yönetişimi / Saklama Matrisi
+skinparam shadowing false
+start
+:Veri öğesini sınıflandır;
+if (Veri türü?) then (Kaynak foto/video)
+ :Amaç: 3D üretim;
+ :Varsayılan: kısa süre + kullanıcı silme kontrolü;
+elseif (Ara 3D artefact)
+ :Mask/point cloud/draft mesh;
+ :Job tamamlanınca veya hata incelemesi bitince sil;
+elseif (Onaylı 3D asset)
+ :Pet profili bağlı kullanıcı içeriği;
+ :Sürümlü sakla, dışa aktar ve silme hakkı uygula;
+elseif (AI sağlık girdisi)
+ :Hassas sağlık verisi;
+ :Açık rıza + minimum bağlam + sıkı erişim;
+elseif (Model telemetry)
+ :PII'siz kalite/gecikme/maliyet metriği;
+ :Toplulaştırılmış uzun dönem analiz;
+else (Eğitim adayı)
+ :Ayrı ve açık eğitim rızası olmadan kullanma;
+ :Lisans/provenance/opt-out kontrolü;
+endif
+:Region, encryption key, erişim rolü ve retention etiketi ata;
+:Her okuma, dışa aktarma ve insan incelemesini audit et;
+if (Rıza geri alındı / silme?) then (Evet)
+ :Aktif sistem, cache, vector index ve artefact store'da sil;
+ :Training exclusion/suppression kimliği oluştur;
+ :Yeniden eğitim veya machine-unlearning gereksinimini değerlendir;
+ :Harici işlemcilere silme talebi ve kanıt takibi;
+endif
+:Retention sonunda otomatik silme + örneklem doğrulama;
+stop
+note right
+3D avatarın ticari kullanım, paylaşım ve türev üretim hakları
+kullanıcıya açıkça gösterilir. Kullanıcı içeriği varsayılan olarak
+genel model eğitimine dahil edilmez.
+end note
+@enduml

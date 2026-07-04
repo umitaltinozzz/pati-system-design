@@ -1,0 +1,37 @@
+@startuml
+title Pati — Hotel ve Kuaför Kapasite Planlama
+skinparam shadowing false
+actor Kullanıcı
+participant "Booking API" as API
+participant "Rule Engine" as Rules
+participant "Capacity Service" as Cap
+database "Resource Calendar" as Cal
+participant "Provider Panel" as Panel
+Kullanıcı -> API : hizmet, pet, tarih aralığı, seçenekler
+API -> Rules : tür/ırk/boyut/yaş/sağlık uygunluğu
+Rules -> Rules : aşı, agresyon, özel bakım, minimum yaş
+alt Uygun değil
+ Rules --> API : reason_code + güvenli alternatif
+ API --> Kullanıcı : koşul ve alternatif göster
+else Uygun
+ Rules -> Cap : kaynak gereksinimi
+ alt Hotel
+  Cap -> Cal : oda/kafes tipi + gece + kapasite
+  Cap -> Cal : giriş/çıkış buffer + temizlik süresi
+ else Kuaför
+  Cap -> Cal : personel yetkinliği + istasyon + süre
+  Cap -> Cal : işlem sırası + hazırlık buffer
+ end
+ Cal --> Cap : uygun kaynak kombinasyonları
+ Cap --> API : quote + resource_hold TTL
+ API --> Kullanıcı : seçenek ve fiyat
+ Kullanıcı -> API : onay
+ API -> Cal : hold'u kesin rezervasyona çevir
+ API -> Panel : görev, pet notu, check-in gereksinimi
+end
+note over Rules,Cal
+Kapasite yalnız “saat boş mu” değildir:
+personel + fiziksel kaynak + pet uyumluluğu + buffer birlikte kilitlenir.
+Hotel'de birden çok gece atomik ayrılır; kısmi aralık kabul edilmez.
+end note
+@enduml

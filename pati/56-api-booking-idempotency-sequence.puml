@@ -1,0 +1,39 @@
+@startuml
+title Pati API — Teklif ve İdempotent Rezervasyon
+skinparam shadowing false
+actor Client
+participant "Booking API" as API
+participant "Idempotency Store" as IDEM
+participant "Availability" as AV
+database "Redis Lock" as LOCK
+database "PostgreSQL" as DB
+participant "Payment Port" as PAY
+Client -> API : POST /quotes
+API -> AV : eligibility + capacity + price
+AV --> API : offer + expiresAt
+API --> Client : 201 quote
+Client -> API : POST /reservations\nIdempotency-Key
+API -> IDEM : claim(scope,key,requestHash)
+alt Existing same request
+ IDEM --> API : stored response
+ API --> Client : same 201 response
+else Key reused with different body
+ IDEM --> API : hash conflict
+ API --> Client : 409 IDEMPOTENCY_KEY_REUSED
+else New request
+ API -> LOCK : acquire slot/resource TTL
+ alt Lock failed
+  API --> Client : 409 SLOT_UNAVAILABLE
+ else Lock acquired
+  API -> PAY : authorize outside DB transaction
+  PAY --> API : authorization
+  API -> DB : begin
+  API -> DB : quote/version recheck
+  API -> DB : reservation + resources + history + outbox
+  API -> DB : commit
+  API -> IDEM : store response
+  API -> LOCK : release
+  API --> Client : 201 reservation
+ end
+end
+@enduml

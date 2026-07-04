@@ -1,0 +1,36 @@
+@startuml
+title Pati — Rezervasyon, Ödeme ve Uyuşmazlık Durum Makinesi
+skinparam shadowing false
+[*] --> Oluşturuldu : kullanıcı talebi
+Oluşturuldu --> ÖdemeBekliyor : fiyat / slot doğrulandı
+ÖdemeBekliyor --> SağlayıcıOnayı : ödeme yetkilendirildi / bloke
+ÖdemeBekliyor --> ÖdemeBaşarısız : ret / 3DS / timeout
+SağlayıcıOnayı --> KabulEdildi : sağlayıcı kabul
+SağlayıcıOnayı --> Reddedildi : sağlayıcı ret
+SağlayıcıOnayı --> SüresiDoldu : SLA aşıldı
+KabulEdildi --> İptalEdildi : kurala göre kullanıcı/sağlayıcı
+KabulEdildi --> HizmetBaşladı : check-in
+HizmetBaşladı --> SağlayıcıTamamladı : hizmet kanıtı
+SağlayıcıTamamladı --> KullanıcıOnayı : bildirim + onay süresi
+KullanıcıOnayı --> Tamamlandı : kullanıcı onayı
+KullanıcıOnayı --> OtomatikOnay : itiraz süresi doldu
+KullanıcıOnayı --> Uyuşmazlıkta : kullanıcı itirazı
+OtomatikOnay --> Tamamlandı
+Uyuşmazlıkta --> HakEdiş : sağlayıcı lehine
+Uyuşmazlıkta --> Kısmiİade : uzlaşma
+Uyuşmazlıkta --> İadeEdildi : kullanıcı lehine
+Tamamlandı --> HakEdiş : komisyon ayır
+HakEdiş --> HakEdişAktarıldı : ödeme sağlayıcısı sonucu
+Reddedildi --> İadeEdildi
+SüresiDoldu --> İadeEdildi
+İptalEdildi --> İadeEdildi : iptal kuralı / kesinti
+ÖdemeBaşarısız --> [*]
+İadeEdildi --> [*]
+Kısmiİade --> [*]
+HakEdişAktarıldı --> [*]
+note right of Uyuşmazlıkta
+Ödeme blokede kalır.
+Taraf beyanları, fotoğraf, mesaj,
+hizmet/konum zamanı ve admin notu korunur.
+end note
+@enduml

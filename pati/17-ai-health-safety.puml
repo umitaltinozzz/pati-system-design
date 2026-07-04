@@ -1,0 +1,39 @@
+@startuml
+title Pati — AI Sağlık Asistanı Güvenlik ve Yönlendirme Akışı
+skinparam shadowing false
+|Kullanıcı|
+start
+:Açık rıza ve “tanı değildir” bilgilendirmesini kabul et;
+:Pet seç, semptom ve süreyi gir;
+|Platform|
+:Yaş, tür, kilo, alerji ve ilaçlardan minimum gerekli bağlamı seç;
+:PII temizle, prompt injection ve zararlı içerik kontrolü;
+:Kırmızı bayrak kurallarını çalıştır;
+if (Acil kırmızı bayrak?) then (Evet)
+ :AI cevabını beklemeden ACİL risk üret;
+ :En yakın açık veteriner / acil numara yönlendir;
+ :Kullanıcıya gecikmeden bildirim;
+else (Hayır)
+ :Şemalı AI isteği gönder;
+ :Yanıtı risk seviyesi + gerekçe + öneri olarak doğrula;
+ if (Şema/güven kontrolü geçti mi?) then (Evet)
+  if (Risk seviyesi?) then (Yüksek)
+   :Aynı gün veteriner yönlendirmesi;
+  elseif (Orta)
+   :Kısa sürede randevu + takip soruları;
+  else (Düşük)
+   :Evde izlem sınırları + kötüleşme işaretleri;
+  endif
+ else (Hayır)
+  :Güvenli fallback ve veteriner yönlendirmesi;
+ endif
+endif
+:Model/prompt sürümü, kaynak bağlamı ve sonucu audit et;
+:Kullanıcı geri bildirimi ve yanlış öneri raporu sun;
+stop
+note right
+Kesin tanı, reçete veya doz önerisi verilmez.
+Veteriner onaylı içerik politikası, regresyon test seti,
+model değişim onayı ve adversarial test zorunludur.
+end note
+@enduml

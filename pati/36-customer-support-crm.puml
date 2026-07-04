@@ -1,0 +1,36 @@
+@startuml
+title Pati — Müşteri Destek, CRM ve Vaka Yönetimi
+skinparam shadowing false
+|Kullanıcı / Sağlayıcı|
+start
+:Uygulama içi destek / e-posta / telefon / WhatsApp başvurusu;
+|Platform|
+:Kanal mesajını tek conversation ve case altında birleştir;
+:Kimliği doğrula; hassas işlem için step-up uygula;
+:Niyet, ürün alanı, önem ve duygu sinyaliyle sınıflandır;
+:Rezervasyon/ödeme/işletme bağlamını yetkiye göre ilişkilendir;
+if (Önem?) then (P1 Güvenlik)
+ :Anında on-call ve güvenlik eskalasyonu;
+elseif (P2 Finans)
+ :Ödeme/uyuşmazlık uzmanı kuyruğu;
+else (Standart)
+ :Kategori SLA kuyruğu;
+endif
+|Destek Uzmanı|
+:Hazır yanıt + bilgi tabanı önerisini incele;
+:PII maskeli vaka bağlamında işlem yap;
+if (Yetki dışı işlem?) then (Evet)
+ :Admin/finans maker-checker onayı iste;
+endif
+:Çözüm, reason code ve kullanıcı iletişimini kaydet;
+|Platform|
+:SLA durdur / yeniden açma süresi başlat;
+:Memnuniyet anketi ve tekrar temas metriği;
+:Kök neden ve ürün geri bildirimi etiketlerini analitiğe gönder;
+stop
+note right
+Destek temsilcisi kart/sağlık ham verisini varsayılan göremez.
+Hesap silme, büyük iade ve yaptırım kaldırma çift onaylıdır.
+Tüm temsilci görüntüleme ve dışa aktarma işlemleri audit edilir.
+end note
+@enduml

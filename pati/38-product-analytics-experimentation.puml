@@ -1,0 +1,31 @@
+@startuml
+title Pati — Ürün Analitiği, KPI ve Güvenli Deney Altyapısı
+skinparam componentStyle rectangle
+skinparam shadowing false
+component "Client / Server Events" as E
+component "Tracking Plan Validator" as V
+queue "Analytics Pipeline" as Q
+database "Warehouse" as W
+component "Semantic Metrics Layer" as M
+component "Experiment Assignment" as X
+component "Guardrail Monitor" as G
+component "Dashboards / Alerts" as D
+E --> V : event + schema_version
+V --> Q : valid, consent-aware
+V --> E : reject unknown/PII field
+Q --> W
+W --> M
+X --> E : experiment_id + variant
+M --> G
+M --> D
+G --> X : otomatik durdurma
+note bottom
+North Star: güvenle tamamlanan hizmet sayısı.
+Funnel: arama → profil → teklif → ödeme → kabul → tamamlanma.
+Kalite: iptal/no-show, uyuşmazlık, tekrar rezervasyon, SLA.
+Pazar: arz kapsaması, slot doluluk, sağlayıcı yanıt süresi.
+Guardrail: güvenlik olayı, iade, şikâyet, gecikme, erişilebilirlik.
+Deney ataması kullanıcı bazında kararlı; SRM ve novelty kontrol edilir.
+Sağlık ve güvenlik kritik akışlarında deney kapsamı sınırlıdır.
+end note
+@enduml

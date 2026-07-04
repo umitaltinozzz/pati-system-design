@@ -1,0 +1,57 @@
+@startuml
+title Pati — Kesin Teknoloji ve Üretim Deployment
+skinparam shadowing false
+node "İstemciler" {
+ component "React Native + Expo" as Mobile
+ component "Next.js Web/Admin/Provider" as Web
+ component "Three.js / R3F Viewer" as Viewer
+}
+cloud "Edge" {
+ component "CDN" as CDN
+ component "WAF / Rate Limit" as WAF
+}
+node "Kubernetes" {
+ node "API Deployment — Node 24 LTS" {
+  component "NestJS Modular Monolith" as API
+ }
+ node "Worker Deployments" {
+  component "Temporal Workers" as TW
+  component "Notification / Import Workers" as NW
+ }
+ node "AI/3D — Python 3.13" {
+  component "FastAPI AI Gateway" as AIG
+  component "Triton / ONNX Runtime" as Triton
+  component "Blender / Open3D Batch" as Batch
+ }
+}
+database "PostgreSQL 18" as PG
+database "Redis" as Redis
+queue "NATS JetStream" as NATS
+component "Temporal Server" as Temporal
+database "S3 Object Storage" as S3
+database "pgvector" as Vector
+component "OpenTelemetry" as OTEL
+component "Prometheus/Grafana/Loki/Tempo" as OBS
+Mobile --> CDN
+Web --> CDN
+Viewer --> CDN
+CDN --> WAF
+WAF --> API
+API --> PG
+API --> Redis
+API --> NATS
+API --> Temporal
+API --> S3
+TW --> Temporal
+TW --> PG
+NW --> NATS
+NW --> S3
+AIG --> Triton
+AIG --> Vector
+Batch --> S3
+Batch --> NATS
+API --> OTEL
+TW --> OTEL
+AIG --> OTEL
+OTEL --> OBS
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title Pati — Sahtecilik, Kötüye Kullanım ve Risk Karar Motoru
+skinparam shadowing false
+start
+:Olay al: kayıt / giriş / rezervasyon / ödeme / yorum / hak ediş;
+:Cihaz, hesap, ağ, ödeme, davranış ve ilişki sinyallerini çıkar;
+:PII minimizasyonu ile feature set üret;
+:Kural skoru + model skoru + sağlayıcı sinyalini birleştir;
+if (Risk seviyesi?) then (Düşük)
+ :İşlemi geçir;
+elseif (Orta)
+ :OTP / 3DS / belge / step-up doğrulama;
+ if (Doğrulama geçti mi?) then (Evet)
+  :İşlemi geçir ve izlemeye al;
+ else (Hayır)
+  :İşlemi reddet;
+ endif
+elseif (Yüksek)
+ :İşlemi durdur;
+ :Ödeme/hak edişi geçici blokeye al;
+ :Risk inceleme vakası oluştur;
+else (Kritik)
+ :Hesap/cihaz/ödeme aracını geçici kısıtla;
+ :Güvenlik olay eskalasyonu;
+endif
+:Karar nedeni ve kullanılan sinyal sürümünü audit et;
+if (Kullanıcı itirazı?) then (Evet)
+ :İnsan incelemesi ve kanıt değerlendirmesi;
+ :Kararı düzelt, yanlış pozitif etiketini modele geri besle;
+endif
+stop
+note right
+Sinyaller: çoklu hesap, kupon istismarı, kart denemesi,
+sahte rezervasyon, self-review, konum sahteciliği,
+hızlı iptal zinciri ve anormal hak ediş hesabı değişimi.
+Korunan özellikler doğrudan risk skoru olarak kullanılmaz.
+end note
+@enduml

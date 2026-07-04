@@ -1,0 +1,43 @@
+@startuml
+title Pati — Pet Fotoğrafından 3D Avatar Onboarding Akışı
+skinparam shadowing false
+|Kullanıcı|
+start
+:3D avatar özelliğini seç;
+:Açık rıza, kullanım amacı ve saklama süresini onayla;
+:Pet türü, ırk, yaş ve ayırt edici özellikleri doğrula;
+|Uygulama|
+:Çekim rehberi ve canlı kalite göstergesi aç;
+repeat
+ :Ön / sol / sağ / üst açı fotoğrafı veya kısa video çek;
+ :Bulanıklık, ışık, kadraj, örtülme ve pet varlığı kontrolü;
+repeat while (Minimum kalite sağlandı mı?) is (Hayır)
+:Arka plan ve insan yüzü/PII tespiti;
+:EXIF konum verisini kaldır;
+:Kullanıcıya kullanılacak kareleri önizlet;
+|Kullanıcı|
+:Kareleri onayla ve stil seç;
+note right
+Gerçekçi
+Yumuşak 3D
+Oyun karakteri
+Maskot / sticker
+end note
+|Platform|
+:Upload session + kısa ömürlü signed URL üret;
+:Dosyaları karantinaya yükle;
+:Zararlı içerik, format ve bütünlük taraması;
+:3D üretim job'u oluştur;
+:İlerleme ve tahmini süre bildir;
+|Kullanıcı|
+:Önizleme avatarını incele;
+if (Benzerlik yeterli mi?) then (Evet)
+ :Avatarı onayla;
+else (Hayır)
+ :Sorunlu bölgeyi işaretle ve yeniden üret;
+endif
+|Platform|
+:Onaylı sürümü pet profiline bağla;
+:Kaynak görüntü retention politikasını başlat;
+stop
+@enduml

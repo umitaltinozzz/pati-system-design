@@ -1,0 +1,44 @@
+@startuml
+title Pati — Pet Kimliği, Sahiplik ve Paylaşımlı Bakım
+skinparam shadowing false
+|Birincil sahip|
+start
+:Pet profili oluştur;
+:Tür, ırk, doğum, mikroçip ve ayırt edici bilgileri gir;
+|Platform|
+:Olası mükerrer petleri mikroçip + sahip + özelliklerle kontrol et;
+if (Mükerrer şüphesi?) then (Evet)
+ :Profilleri otomatik birleştirme;
+ :Kanıtlı manuel inceleme kuyruğu;
+endif
+|Birincil sahip|
+:Ortak bakıcı / aile üyesi davet et;
+:Yetki kapsamı seç;
+note right
+Görüntüleme
+Rezervasyon oluşturma
+Sağlık özeti görme
+Acil kişi
+Ödeme yapma
+end note
+|Davetli|
+:Daveti doğrulanmış hesapla kabul et;
+|Platform|
+:Süreli ve geri alınabilir pet erişimi oluştur;
+if (Sahiplik devri?) then (Evet)
+ |Mevcut sahip|
+ :Devir talebi ve kimlik kanıtı;
+ |Yeni sahip|
+ :Devir kabulü ve iletişim doğrulaması;
+ |Platform|
+ :Bekleme süresi + açık rezervasyon/borç kontrolü;
+ :Sahipliği atomik değiştir, geçmiş erişimi koru;
+endif
+if (Pet kayıp/vefat durumu?) then (Evet)
+ :Profili hassas duruma al;
+ :Bildirim, rezervasyon ve öneri akışlarını durdur;
+ :Sağlık kayıtlarını saklama politikasına göre koru;
+endif
+:Her görüntüleme, paylaşım ve devir işlemini audit et;
+stop
+@enduml

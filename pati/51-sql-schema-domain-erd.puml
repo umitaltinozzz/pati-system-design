@@ -1,0 +1,77 @@
+@startuml
+title Pati — PostgreSQL Şema Domain ER Haritası
+hide methods
+skinparam shadowing false
+entity app_user
+entity user_role
+entity address
+entity pet
+entity pet_caregiver
+entity pet_health_record
+entity business
+entity business_member
+entity provider_document
+entity service_category
+entity service
+entity provider_resource
+entity service_resource
+entity availability_rule
+entity availability_exception
+entity quote
+entity reservation
+entity reservation_resource
+entity reservation_status_history
+entity payment
+entity ledger_entry
+entity payout_account
+entity payout
+entity review
+entity dispute
+entity dispute_evidence
+entity consent_record
+entity communication_log
+entity notification
+entity ai_job
+entity ai_health_assessment
+entity pet_3d_asset
+entity idempotency_record
+entity outbox_event
+entity audit_event
+app_user ||--o{ user_role
+app_user ||--o{ address
+app_user ||--o{ pet : owns
+pet ||--o{ pet_caregiver
+app_user ||--o{ pet_caregiver
+pet ||--o{ pet_health_record
+app_user ||--o{ business
+business ||--o{ business_member
+business ||--o{ provider_document
+service_category ||--o{ service
+business ||--o{ service
+business ||--o{ provider_resource
+service }o--o{ provider_resource : service_resource
+service ||--o{ availability_rule
+service ||--o{ availability_exception
+app_user ||--o{ quote
+pet ||--o{ quote
+service ||--o{ quote
+quote ||--|| reservation
+reservation ||--o{ reservation_resource
+provider_resource ||--o{ reservation_resource
+reservation ||--o{ reservation_status_history
+reservation ||--o{ payment
+payment ||--o{ ledger_entry
+business ||--o{ payout_account
+business ||--o{ payout
+reservation ||--o| review
+reservation ||--o{ dispute
+dispute ||--o{ dispute_evidence
+app_user ||--o{ consent_record
+consent_record ||--o{ communication_log
+app_user ||--o{ notification
+app_user ||--o{ ai_job
+pet ||--o{ ai_job
+ai_job ||--o| ai_health_assessment
+ai_job ||--o{ pet_3d_asset
+pet ||--o{ pet_3d_asset
+@enduml

@@ -1,0 +1,49 @@
+@startuml
+title Pati — Ödeme, Komisyon, Hak Ediş ve İade Muhasebesi
+skinparam shadowing false
+start
+:Teklif tutarı ve para birimini sabitle;
+:Payment intent + idempotency key oluştur;
+:Kart verisini sağlayıcının tokenized alanında al;
+if (Yetkilendirme?) then (Başarılı)
+ :Tutarı bloke et;
+ :Rezervasyon ödeme kaydını AUTHORIZED yap;
+else (Başarısız)
+ :Kodlanmış güvenli hata döndür;
+ stop
+endif
+if (Sağlayıcı kabulü?) then (Evet)
+ :Politikaya göre capture zamanı planla;
+else (Ret / SLA)
+ :Yetkilendirmeyi iptal et;
+ :Ledger'a reversal yaz;
+ stop
+endif
+:Hizmet tamamlandı;
+if (Uyuşmazlık var mı?) then (Hayır)
+ :Brüt tutarı capture et;
+ :Komisyon + vergi + sağlayıcı alacağını hesapla;
+ :Çift taraflı ledger kaydı oluştur;
+ :Hak edişi bekleme süresine al;
+ :Sağlayıcı hesabına transfer et;
+else (Evet)
+ :Transferi dondur;
+ :Kanıt ve beyanları incele;
+ if (Karar?) then (Tam iade)
+  :Capture öncesi void veya tam refund;
+ elseif (Kısmi iade)
+  :Kısmi refund + komisyon düzeltmesi;
+ else (Sağlayıcı lehine)
+  :Normal hak ediş;
+ endif
+endif
+:Webhook imzasını doğrula;
+:Provider olayı ile yerel ledger'ı mutabakat et;
+:Makbuz/fatura ve audit kaydı üret;
+stop
+note right
+Para hareketleri yalnız append-only ledger ile izlenir.
+Webhook tekrarları event_id ile idempotent işlenir.
+Günlük otomatik, aylık finansal mutabakat yapılır.
+end note
+@enduml

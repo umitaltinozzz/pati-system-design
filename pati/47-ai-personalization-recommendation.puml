@@ -1,0 +1,35 @@
+@startuml
+title Pati — İzinli Kişiselleştirme ve Hizmet Öneri Modeli
+skinparam shadowing false
+|Platform|
+start
+:Kişiselleştirme tercihi ve rıza durumunu kontrol et;
+if (Kişiselleştirme açık mı?) then (Hayır)
+ :Konum, uygunluk ve kaliteye dayalı genel sıralama;
+ stop
+endif
+:Pet türü/yaşı, açık tercihler ve geçmiş işlem özetini al;
+:Hassas sağlık ayrıntısını varsayılan feature set'ten çıkar;
+:Gerçek zamanlı uygun sağlayıcı adaylarını üret;
+:Embedding/benzerlik + davranış + bağlamsal skoru hesapla;
+:Güven, doğrulama, mesafe, fiyat ve çeşitlilik guardrail'i uygula;
+:Tek sağlayıcı/marka yoğunlaşmasını sınırla;
+:Öneri nedenini üret;
+note right
+“Yakınında ve bugün uygun”
+“Benzer pet sahiplerince yüksek puanlı”
+“Daha önce kullandığın hizmet türü”
+end note
+:Keşif için kontrollü çeşitlilik ekle;
+:Gösterim, tıklama, rezervasyon ve gizleme geri bildirimini kaydet;
+if (Kullanıcı ‘bunu önerme’ dedi mi?) then (Evet)
+ :Negatif tercihi anında uygula;
+endif
+:Model etkisini dönüşüm yanında şikâyet, iptal ve fiyat adaletiyle ölç;
+stop
+note right
+Sponsorlu içerik ayrı ve görünürdür.
+Kişiselleştirme kapatılabilir; profil çıkarımı indirilebilir/silinebilir.
+Sağlık durumu sigorta veya fiyat ayrımcılığı için kullanılmaz.
+end note
+@enduml

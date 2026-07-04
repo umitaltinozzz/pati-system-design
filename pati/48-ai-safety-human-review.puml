@@ -1,0 +1,35 @@
+@startuml
+title Pati — AI Güvenlik, İnsan İncelemesi ve İtiraz Döngüsü
+skinparam shadowing false
+start
+:AI isteğini risk sınıfına ayır;
+if (Risk sınıfı?) then (Düşük)
+ :Otomatik çıktı + standart doğrulama;
+elseif (Orta)
+ :Kural kontrolü + güven eşiği + kullanıcı uyarısı;
+elseif (Yüksek)
+ :İnsan onayı olmadan eylem üretme;
+ :Uzman inceleme kuyruğu;
+else (Yasak)
+ :İsteği güvenli biçimde reddet;
+ :Uygun insan/servis yönlendirmesi;
+endif
+:Çıktı ve model/prompt/policy sürümünü kaydet;
+if (Kullanıcı geri bildirim verdi mi?) then (Evet)
+ :Yanlış, zararlı, benzemiyor veya uygunsuz reason code al;
+ :İlgili input/output'u erişim kontrollü vaka yap;
+ if (Acil zarar riski?) then (Evet)
+  :Model/özellik kill switch değerlendirmesi;
+  :Güvenlik ve ürün sorumlusuna eskalasyon;
+ endif
+ :Uzman kararını kullanıcıya gerekçeli bildir;
+ :Onaylı vakayı eval setine aday olarak ekle;
+endif
+:Periyodik hata taksonomisi ve politika güncellemesi;
+stop
+note right
+İnsan inceleyici yalnız görev için gerekli minimum veriyi görür.
+AI çıktısı nedeniyle hesap yaptırımı, ödeme reddi veya sağlık kararı
+tek başına otomatikleştirilemez; itiraz ve insan değerlendirmesi vardır.
+end note
+@enduml

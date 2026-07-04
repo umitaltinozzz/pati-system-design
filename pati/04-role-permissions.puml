@@ -1,0 +1,62 @@
+@startuml
+title Pati — Ayrıntılı Roller ve Yetki Sınırları
+skinparam shadowing false
+left to right direction
+actor "Pet sahibi" as Owner
+actor "İşletme sahibi" as Provider
+actor Walker
+actor "Operasyon" as Ops
+actor Admin
+actor "Super Admin" as Super
+rectangle "Kullanıcı alanı" {
+ usecase "Kendi profilini yönet" as A1
+ usecase "Kendi pet / sağlık verisini yönet" as A2
+ usecase "Rezervasyon / ödeme / yorum" as A3
+}
+rectangle "Sağlayıcı alanı" {
+ usecase "Kendi işletme, belge ve hizmetleri" as B1
+ usecase "Kendi takvim ve talepleri" as B2
+ usecase "Kendi hak ediş ve yorumları" as B3
+ usecase "Walker rota / başlangıç / bitiş" as B4
+}
+rectangle "Operasyon alanı" {
+ usecase "Aday işletme ve veri kalitesi" as C1
+ usecase "VoIP çağrı sonucu ve not" as C2
+ usecase "İletişim izni kaydı" as C3
+ usecase "İzinli WhatsApp gönderimi" as C4
+}
+rectangle "Yönetim alanı" {
+ usecase "Kullanıcı / işletme moderasyonu" as D1
+ usecase "Ödeme / iade / uyuşmazlık" as D2
+ usecase "Kategori / şehir / içerik" as D3
+ usecase "Rol, politika ve sistem ayarı" as D4
+ usecase "Denetim kaydı görüntüleme" as D5
+}
+Owner --> A1
+Owner --> A2
+Owner --> A3
+Provider --> B1
+Provider --> B2
+Provider --> B3
+Walker --> B2
+Walker --> B4
+Ops --> C1
+Ops --> C2
+Ops --> C3
+Ops --> C4
+Admin --> D1
+Admin --> D2
+Admin --> D3
+Admin --> D5
+Super --> D1
+Super --> D2
+Super --> D3
+Super --> D4
+Super --> D5
+C3 ..> C4 : izin yoksa engelle
+D2 ..> D5 : her değişiklik loglanır
+note bottom
+Varsayılan ilke: en az yetki, kaynak sahipliği,
+hassas sağlık verisinde açık rıza ve alan bazlı erişim.
+end note
+@enduml

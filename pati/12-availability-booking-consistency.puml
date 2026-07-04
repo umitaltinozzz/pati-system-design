@@ -1,0 +1,49 @@
+@startuml
+title Pati — Takvim, Slot Kilidi ve Çifte Rezervasyon Koruması
+skinparam shadowing false
+actor Kullanıcı
+participant "API" as API
+participant "Availability Service" as AV
+database "Redis Lock" as Lock
+database "PostgreSQL" as DB
+participant "Payment" as Pay
+queue "Expiry Queue" as Q
+Kullanıcı -> API : teklif iste(service, time, pet, address)
+API -> AV : uygunluk + kapasite + hizmet alanı
+AV -> DB : slot ve istisnaları oku
+AV --> API : quote_id, amount, expires_at
+Kullanıcı -> API : rezervasyonu onayla(quote_id, idempotency_key)
+API -> DB : idempotency_key kontrolü
+alt Daha önce tamamlandı
+ DB --> API : mevcut rezervasyon
+ API --> Kullanıcı : aynı güvenli cevap
+else Yeni işlem
+ API -> Lock : SET NX slot/provider/time + TTL
+ alt Kilit alınamadı
+  Lock --> API : conflict
+  API --> Kullanıcı : slot doldu, alternatif öner
+ else Kilit alındı
+  API -> DB : transaction begin
+  API -> DB : slot version/capacity recheck
+  API -> Pay : ödeme yetkilendir
+  alt Ödeme başarılı
+   Pay --> API : authorization_id
+   API -> DB : reservation + outbox event
+   API -> DB : transaction commit
+   API -> Q : provider-approval timeout
+   API -> Lock : release
+   API --> Kullanıcı : onay bekliyor
+  else Ödeme başarısız
+   Pay --> API : failure
+   API -> DB : rollback
+   API -> Lock : release
+   API --> Kullanıcı : güvenli hata
+  end
+ end
+end
+note over API,DB
+Saatler UTC saklanır; istemcide yerel saate çevrilir.
+Optimistic version + kısa dağıtık kilit birlikte kullanılır.
+Outbox, rezervasyon ve olayın atomikliğini korur.
+end note
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+title Pati — İptal, No-show ve İade Politika Motoru
+skinparam shadowing false
+start
+:İptal talebi veya operasyon olayı al;
+:Aktör, rezervasyon durumu, hizmet türü ve zamanı yükle;
+if (Hizmet başladı mı?) then (Evet)
+ :Normal iptal yerine uyuşmazlık/erken bitiş akışı;
+ stop
+endif
+if (Sağlayıcı iptali mi?) then (Evet)
+ :Kullanıcıya tam iade;
+ :Sağlayıcı güven metriği ve tekrar ihlal kuralı;
+ :Alternatif sağlayıcı/slot öner;
+else (Kullanıcı)
+ :Başlangıca kalan süreyi hesapla;
+ if (Ücretsiz pencere içinde?) then (Evet)
+  :Tam iade;
+ elseif (Geç iptal)
+  :Politikadaki sabit/oransal kesintiyi hesapla;
+  :Kalan tutarı iade et;
+ else (No-show)
+  :Check-in kanıtı ve bekleme süresini doğrula;
+  :No-show ücretini uygula veya itiraz aç;
+ endif
+endif
+if (Mücbir sebep talebi?) then (Evet)
+ :Belge ve reason code ile manuel inceleme;
+ :Politika istisnası kararını audit et;
+endif
+:Slot/kaynak kapasitesini serbest bırak;
+:Payment void/refund ve ledger düzeltmesi oluştur;
+:Taraflara tutar dökümü ve itiraz süresi bildir;
+stop
+note right
+Politika rezervasyon anında sürümlenip sabitlenir.
+Sonradan değişen kurallar mevcut rezervasyonu etkilemez.
+Tüm hesaplar kuruş hassasiyetinde ve tekrar çalıştırılabilir olmalıdır.
+end note
+@enduml

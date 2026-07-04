@@ -1,0 +1,48 @@
+@startuml
+title Pati — Güvenlik ve Mahremiyet Tehdit Modeli
+skinparam componentStyle rectangle
+skinparam shadowing false
+rectangle "İstemci" as Client
+rectangle "Edge / API" as API
+rectangle "Domain Servisleri" as Svc
+database "İşlemsel Veri" as DB
+rectangle "Dosya Yükleme" as File
+rectangle "Admin / Operasyon" as Admin
+rectangle "Harici Entegrasyonlar" as Ext
+Client --> API : TLS
+API --> Svc : service identity
+Svc --> DB : least privilege
+Client --> File : signed upload
+Admin --> API : MFA + step-up
+Svc --> Ext : allowlist + signed webhook
+note right of Client
+Tehdit: token çalma, cihaz paylaşımı
+Kontrol: kısa access token, rotation,
+secure storage, cihaz oturumu, riskli giriş uyarısı
+end note
+note right of API
+Tehdit: BOLA/IDOR, brute force, injection
+Kontrol: resource authorization, schema validation,
+rate limit, idempotency, WAF, güvenli hata
+end note
+note right of DB
+Tehdit: sağlık/iletişim verisi sızıntısı
+Kontrol: alan şifreleme, RLS/ABAC,
+ayrı anahtar, retention, erişim audit'i
+end note
+note right of File
+Tehdit: malware, EXIF/PII, yetkisiz erişim
+Kontrol: AV scan, MIME magic, boyut limiti,
+EXIF temizleme, quarantine, kısa signed URL
+end note
+note right of Admin
+Tehdit: ayrıcalık kötüye kullanımı
+Kontrol: MFA, just-in-time rol, maker-checker,
+PII maskeleme, export limiti, immutable audit
+end note
+note right of Ext
+Tehdit: sahte webhook, SSRF, tedarikçi ihlali
+Kontrol: imza + timestamp, replay koruması,
+egress policy, secret rotation, vendor review
+end note
+@enduml

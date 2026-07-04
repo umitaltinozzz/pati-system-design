@@ -1,0 +1,25 @@
+@startuml
+title Pati — Domain Event ve Workflow Entegrasyonu
+skinparam componentStyle rectangle
+skinparam shadowing false
+[Identity] --> [Outbox] : UserRegistered/DeletionRequested
+[Pet] --> [Outbox] : PetCreated/HealthRecordAdded
+[Provider] --> [Outbox] : ProviderVerified/Suspended
+[Booking] --> [Outbox] : ReservationCreated/Accepted/Completed
+[Payment] --> [Outbox] : PaymentAuthorized/Refunded/PayoutPaid
+[Trust] --> [Outbox] : DisputeOpened/Resolved
+[Outbox] --> [NATS JetStream] : at-least-once
+[NATS JetStream] --> [Notification Worker]
+[NATS JetStream] --> [Analytics Consumer]
+[NATS JetStream] --> [AI/3D Worker]
+[NATS JetStream] --> [Search Projector]
+[NATS JetStream] --> [Temporal Workflow Starter]
+[Temporal Workflow Starter] --> [Booking] : command with idempotency
+[Temporal Workflow Starter] --> [Payment] : command with idempotency
+note bottom
+Envelope: eventId, type, schemaVersion, aggregateId,
+occurredAt, correlationId, causationId, payload.
+Consumer processed_event tablosuyla idempotenttir.
+Breaking payload değişikliği yeni major event sürümüdür.
+end note
+@enduml

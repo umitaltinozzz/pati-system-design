@@ -1,0 +1,40 @@
+@startuml
+title Pati — Sağlayıcı Hak Ediş, Vergi ve Hesap Değişikliği
+skinparam shadowing false
+|Sağlayıcı|
+start
+:Ödeme hesabı ve vergi bilgisi gir;
+|Platform|
+:IBAN/hesap sahipliği ve kimlik eşleşmesini doğrula;
+:Vergi mükellefi / belge gereksinimini kategoriye göre kontrol et;
+if (Doğrulama başarılı mı?) then (Evet)
+ :Payout hesabını aktive et;
+else (Hayır)
+ :Eksik belge kuyruğu; hak edişi biriktir fakat transfer etme;
+endif
+:Hizmet tamamlanması ve itiraz süresini bekle;
+:Brüt, komisyon, vergi/stopaj, iade ve net tutarı hesapla;
+:Ledger bakiyesi ile ödeme sağlayıcısı bakiyesini mutabakat et;
+if (Minimum eşik ve uygunluk?) then (Evet)
+ :Payout batch oluştur;
+ :Transferi sağlayıcıya gönder;
+ if (Transfer sonucu?) then (Başarılı)
+  :Hak edişi aktarıldı yap ve ekstre üret;
+ else (Başarısız)
+  :Kodlanmış hata + tekrar planı / manuel inceleme;
+ endif
+endif
+|Sağlayıcı|
+if (IBAN değişikliği?) then (Evet)
+ :MFA + hesap sahipliği yeniden doğrulama;
+ |Platform|
+ :Soğuma süresi ve güvenlik bildirimi;
+ :Riskli değişiklikte payout'u geçici dondur;
+endif
+stop
+note right
+Finansal hesap değişikliği maker-checker onayı gerektirebilir.
+Negatif bakiye sonraki hak edişten mahsup edilir;
+ledger kayıtları düzenlenmez, düzeltme ters kayıtla yapılır.
+end note
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+title Pati — Bildirim Orkestrasyonu ve Tercih Yönetimi
+skinparam componentStyle rectangle
+skinparam shadowing false
+queue "Domain Events" as E
+component "Event Router" as R
+database "Template Registry\nversion + locale" as T
+database "User Preferences" as P
+database "Consent / Suppression" as C
+component "Policy Engine" as PE
+component "Scheduler / Quiet Hours" as S
+component "Dedup / Rate Limit" as D
+queue "Channel Queues" as Q
+component "Push Adapter" as Push
+component "SMS Adapter" as SMS
+component "E-mail Adapter" as Mail
+component "WhatsApp Adapter" as WA
+database "Delivery Log" as L
+component "Retry + DLQ" as Retry
+E --> R : reservation/payment/health/security
+R --> T : olay + dil için şablon
+R --> PE
+P --> PE : kanal / kategori / sessiz saat
+C --> PE : amaç bazlı izin / opt-out
+PE --> S : izinli mesaj
+S --> D
+D --> Q
+Q --> Push
+Q --> SMS
+Q --> Mail
+Q --> WA
+Push --> L : sent/delivered/opened
+SMS --> L
+Mail --> L
+WA --> L
+L --> Retry : transient failure
+Retry --> Q : exponential backoff
+note bottom
+Güvenlik ve kritik işlem mesajları ayrı politika sınıfıdır.
+Pazarlama mesajı izin ve frekans limiti olmadan gönderilemez.
+Template değişiklikleri onaylı, sürümlü ve geri alınabilirdir.
+end note
+@enduml

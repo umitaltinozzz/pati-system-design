@@ -1,0 +1,50 @@
+@startuml
+title Pati — Gözlemlenebilirlik, SLO ve Olay Müdahalesi
+skinparam componentStyle rectangle
+skinparam shadowing false
+rectangle "Sinyaller" {
+ [Structured Logs] as Logs
+ [Metrics] as Metrics
+ [Distributed Traces] as Traces
+ [Audit Events] as Audit
+ [Synthetic Checks] as Synth
+}
+rectangle "Platform" {
+ [Central Collector] as Col
+ [Dashboards] as Dash
+ [SLO / Error Budget] as SLO
+ [Alert Manager] as Alert
+ [Security SIEM] as SIEM
+}
+rectangle "Operasyon" {
+ [On-call] as Oncall
+ [Runbooks] as Run
+ [Status Page] as Status
+ [Incident Timeline] as Timeline
+ [Postmortem / Actions] as PM
+}
+Logs --> Col
+Metrics --> Col
+Traces --> Col
+Audit --> SIEM
+Synth --> Col
+Col --> Dash
+Col --> SLO
+SLO --> Alert : burn-rate
+SIEM --> Alert : security finding
+Alert --> Oncall : severity + owner
+Oncall --> Run
+Oncall --> Timeline
+Timeline --> Status : kullanıcı etkisi
+Timeline --> PM
+PM --> SLO : kalıcı düzeltme / yeni alarm
+note bottom
+Örnek SLO'lar:
+• Rezervasyon oluşturma kullanılabilirliği ≥ %99,9
+• Ödeme webhook işleme p95 < 60 sn
+• Slot çifte rezervasyon oranı = 0
+• Kritik bildirim başarı oranı ≥ %99
+• P1 olay ilk müdahale < 10 dk
+Loglarda sağlık verisi, token, kart ve iletişim PII bulunmaz.
+end note
+@enduml

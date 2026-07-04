@@ -1,0 +1,39 @@
+@startuml
+title Pati — Domain Event Sözleşmeleri ve Servis Sınırları
+skinparam componentStyle rectangle
+skinparam shadowing false
+component "Reservation Service" as RS
+component "Payment Service" as PS
+component "Provider Service" as PR
+component "Notification Service" as NS
+component "Review / Trust Service" as TS
+component "Health Service" as HS
+component "Analytics Consumer" as AN
+queue "Event Bus" as BUS
+database "Schema Registry" as REG
+RS --> BUS : ReservationCreated v1
+RS --> BUS : ReservationAccepted v1
+RS --> BUS : ServiceStarted / Completed v1
+PS --> BUS : PaymentAuthorized / Captured v1
+PS --> BUS : RefundCompleted / PayoutCompleted v1
+PR --> BUS : ProviderVerified / Suspended v1
+HS --> BUS : VaccinationDue v1
+BUS --> NS
+BUS --> TS
+BUS --> AN
+BUS --> PS : rezervasyon olayları
+BUS --> RS : ödeme sonucu
+REG --> BUS : schema validation
+note bottom
+Ortak envelope:
+event_id, event_type, schema_version, aggregate_id,
+occurred_at UTC, correlation_id, causation_id, tenant_id, payload.
+
+Kurallar:
+• en az bir kez teslim — consumer idempotent
+• kişisel/sağlık verisi event payload'ında minimum
+• sıra aggregate_id partition'ında korunur
+• breaking değişiklik yeni major schema
+• replay ve DLQ operasyon runbook'u zorunlu
+end note
+@enduml
