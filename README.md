@@ -13,6 +13,7 @@ Yazılımcıya doğrudan teslim için başlangıç belgesi: [`YAZILIMCI-HANDOFF.
 - `pati-api/SERVIS-SINIRLARI.md` — modül sahipliği ve transaction sınırları
 - `pati-api/TEKNOLOJI-YIGINI.md` — kesin teknoloji seçimi
 - `pati-sql/migrations/` — PostgreSQL migration seti
+- `pati-load-test/` — Postman collection ve paralel Newman yük runner'ı
 - `pati/` — PlantUML kaynakları ve yerel SVG çıktıları
 
 ## Pati profesyonel derin analiz seti

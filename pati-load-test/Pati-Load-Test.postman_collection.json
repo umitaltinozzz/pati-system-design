@@ -1,0 +1,159 @@
+{
+  "info": {
+    "_postman_id": "bc78b267-ecec-4f24-a624-0f677146a002",
+    "name": "Pati Load Test — 1K / 5K / 10K",
+    "description": "Yalnız staging ortamında kullanılacak read-heavy yük testi. Newman worker runner ile paralel çalıştırılır.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{"key": "token", "value": "{{accessToken}}", "type": "string"}]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set('requestId', pm.variables.replaceIn('{{$guid}}'));",
+          "pm.variables.set('startedAt', Date.now());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const elapsed = Date.now() - Number(pm.variables.get('startedAt'));",
+          "pm.test('HTTP status 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+          "pm.test('Response time under threshold', () => pm.expect(elapsed).to.be.below(Number(pm.environment.get('maxResponseMs') || 1500)));",
+          "pm.test('Content-Type is JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.include('application/json'));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {"key": "cityId", "value": "00000000-0000-0000-0000-000000000001"},
+    {"key": "categoryId", "value": "00000000-0000-0000-0000-000000000001"},
+    {"key": "businessId", "value": "00000000-0000-0000-0000-000000000001"},
+    {"key": "serviceId", "value": "00000000-0000-0000-0000-000000000001"}
+  ],
+  "item": [
+    {
+      "name": "01 Read-only Load Path",
+      "description": "Varsayılan güvenli yük yolu. Veri değiştirmez.",
+      "item": [
+        {
+          "name": "Search verified businesses",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/businesses?cityId={{cityId}}&categoryId={{categoryId}}&verified=true&page[limit]=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["businesses"],
+              "query": [
+                {"key": "cityId", "value": "{{cityId}}"},
+                {"key": "categoryId", "value": "{{categoryId}}"},
+                {"key": "verified", "value": "true"},
+                {"key": "page[limit]", "value": "20"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get business detail",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}],
+            "url": "{{baseUrl}}/businesses/{{businessId}}"
+          }
+        },
+        {
+          "name": "List business services",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}],
+            "url": "{{baseUrl}}/businesses/{{businessId}}/services"
+          }
+        },
+        {
+          "name": "Get service availability",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const from = new Date(Date.now() + 86400000);",
+                  "const to = new Date(from.getTime() + 7 * 86400000);",
+                  "pm.variables.set('availabilityFrom', from.toISOString());",
+                  "pm.variables.set('availabilityTo', to.toISOString());"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}],
+            "url": {
+              "raw": "{{baseUrl}}/services/{{serviceId}}/availability?from={{availabilityFrom}}&to={{availabilityTo}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "{{serviceId}}", "availability"],
+              "query": [
+                {"key": "from", "value": "{{availabilityFrom}}"},
+                {"key": "to", "value": "{{availabilityTo}}"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Authenticated Read Path",
+      "description": "Test kullanıcısının token'ını gerektirir.",
+      "item": [
+        {"name": "Get profile", "request": {"method": "GET", "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}], "url": "{{baseUrl}}/me"}},
+        {"name": "List pets", "request": {"method": "GET", "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}], "url": "{{baseUrl}}/pets"}},
+        {"name": "List reservations", "request": {"method": "GET", "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}], "url": "{{baseUrl}}/reservations?page[limit]=20"}},
+        {"name": "List notifications", "request": {"method": "GET", "header": [{"key": "X-Request-Id", "value": "{{requestId}}"}], "url": "{{baseUrl}}/notifications?page[limit]=20"}}
+      ]
+    },
+    {
+      "name": "99 Write Path — EXPLICIT OPT-IN",
+      "description": "Yalnız izole test veritabanında çalıştır. Gerçek kayıt üretir.",
+      "item": [
+        {
+          "name": "Create quote",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "X-Request-Id", "value": "{{requestId}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"petId\":\"{{petId}}\",\"serviceId\":\"{{serviceId}}\",\"startsAt\":\"{{writeStartsAt}}\"}"
+            },
+            "url": "{{baseUrl}}/quotes"
+          }
+        },
+        {
+          "name": "Create reservation with idempotency",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Idempotency-Key", "value": "load-{{workerId}}-{{requestId}}"},
+              {"key": "X-Request-Id", "value": "{{requestId}}"}
+            ],
+            "body": {"mode": "raw", "raw": "{\"quoteId\":\"{{quoteId}}\",\"paymentMethodToken\":\"{{testPaymentToken}}\"}"},
+            "url": "{{baseUrl}}/reservations"
+          }
+        }
+      ]
+    }
+  ]
+}
+

@@ -7,6 +7,7 @@
 3. `pati-api/openapi.yaml` — HTTP sözleşmesinin tek doğruluk kaynağı
 4. `pati-sql/migrations/*.sql` — veritabanı şemasının tek doğruluk kaynağı
 5. `PATI-MIMARI.md` ve `pati/*.puml` — iş akışı, güvenlik ve operasyon kararları
+6. `pati-load-test/` — Postman/Newman 1K/5K/10K yük testi
 
 ## Uygulama sırası
 
@@ -62,4 +63,3 @@
 - Genel pet görsellerini izinsiz model eğitiminde kullanmak
 - OpenSearch'i PostgreSQL araması ölçülmeden devreye almak
 - AI sonucuyla otomatik tıbbi, finansal veya yaptırım kararı vermek
-
