@@ -1,77 +1,65 @@
-# Pati — Profesyonel Sistem Tasarımı
+# Pati — System Design
 
-Pet care super app için ürün, backend, PostgreSQL, OpenAPI, güvenlik, operasyon ve AI/3D mimari paketidir.
+**Complete system design package for a pet-care super app — architecture, PostgreSQL, OpenAPI and AI/3D**
 
-Yazılımcıya doğrudan teslim için başlangıç belgesi: [`YAZILIMCI-HANDOFF.md`](YAZILIMCI-HANDOFF.md).
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-6BA539?style=for-the-badge&logo=openapiinitiative&logoColor=white)](https://www.openapis.org/)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/docs/Web/HTML)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](./LICENSE)
+![Status](https://img.shields.io/badge/Status-Completed-blue?style=for-the-badge)
 
-## Başlangıç
+---
 
-- `index.html` — altı bölümde sıralanmış 60 UML görünümü
-- `YAZILIMCI-HANDOFF.md` — uygulama sırası ve Definition of Done
-- `PATI-MIMARI.md` — mimari kararların yazılı özeti
-- `pati-api/openapi.yaml` — doğrulanmış OpenAPI 3.1.2 sözleşmesi
-- `pati-api/SERVIS-SINIRLARI.md` — modül sahipliği ve transaction sınırları
-- `pati-api/TEKNOLOJI-YIGINI.md` — kesin teknoloji seçimi
-- `pati-sql/migrations/` — PostgreSQL migration seti
-- `pati-load-test/` — Postman collection ve paralel Newman yük runner'ı
-- `pati/` — PlantUML kaynakları ve yerel SVG çıktıları
+## Overview
 
-## Pati profesyonel derin analiz seti
+A developer-ready design package for Pati, a pet-care super app. It covers product scope, backend architecture, the PostgreSQL schema, a validated OpenAPI contract, security, operations and the AI / 3D components — everything a development team needs to start building, in a defined order with a Definition of Done.
 
-Karşılaştırmalı dokuz görünümün altında Pati için on bir ek üretim mimarisi diyagramı bulunur:
+## Project Status
 
-10. Çekirdek domain veri modeli ve ilişkiler
-11. Sağlayıcı onboarding, belge ve doğrulama
-12. Takvim, slot kilidi, idempotency ve çifte rezervasyon koruması
-13. Ödeme ledger'ı, komisyon, hak ediş, iade ve mutabakat
-14. İşletme veri toplama, provenance, tekilleştirme ve kalite pipeline'ı
-15. VoIP doğrulama, iletişim izni ve WhatsApp suppression zinciri
-16. Walker canlı konum, teslim doğrulama ve acil olay akışı
-17. AI sağlık asistanı güvenlik sınırı ve acil yönlendirme
-18. Çok kanallı bildirim orkestrasyonu
-19. Yorum doğrulama, moderasyon, şikâyet ve uyuşmazlık
-20. Gözlemlenebilirlik, SLO, alarm ve olay müdahalesi
-21. Hizmet dikeyleri ve ortak platform yetkinlik haritası
-22. Veteriner randevusu, hassas sağlık kaydı ve erişim yaşam döngüsü
-23. Hotel oda/kafes ve kuaför personel/istasyon kapasite planlama
-24. Pet taksi fiyatlama, dispatch, teslim doğrulama ve canlı yolculuk
-25. Sigorta yönlendirmesi ve alan bazlı veri paylaşım rızası
-26. Geo arama, uygunluk filtresi ve açıklanabilir sıralama
-27. İptal, no-show, mücbir sebep ve iade politika motoru
-28. Domain event envelope, şema sürümleme ve idempotent consumer kuralları
-29. Güvenlik ve mahremiyet tehdit modeli
-30. Yedekleme, bölgesel felaket kurtarma, RPO ve RTO
-31. Kimlik doğrulama, oturum güvenliği ve hesap yaşam döngüsü
-32. Pet kimliği, mükerrer profil, ortak bakım ve sahiplik devri
-33. Fiyat kitabı, promosyon bütçesi, komisyon ve vergi hesaplama
-34. Sahtecilik, kötüye kullanım, step-up ve insan incelemesi
-35. Sağlayıcı ödeme hesabı, vergi, hak ediş ve mutabakat
-36. Çok kanallı müşteri destek ve CRM vaka yönetimi
-37. Sürümlü kategori/hizmet kataloğu ve veri göçü yönetişimi
-38. Ürün analitiği, KPI, deney ataması ve güvenlik guardrail'leri
-39. WCAG erişilebilirlik, lokalizasyon ve kritik içerik onayı
-40. KVKK veri erişimi, dışa aktarım, düzeltme ve silme orkestrasyonu
-41. Fotoğraf/video çekim rehberi ve 3D avatar onboarding
-42. Segmentasyon, reconstruction, mesh, texture, fur, rig, animasyon ve LOD pipeline'ı
-43. Mobil/web glTF viewer, cihaz LOD seçimi, animasyon, aksesuar ve AR
-44. Sağlık, vision, 3D, öneri, fraud ve maskot modelleri için AI gateway/router
-45. Veri kartı, model kartı, evaluation, shadow, canary, drift ve rollback MLOps süreci
-46. Veteriner onaylı kaynaklarla sürümlü RAG bilgi altyapısı
-47. Açıklanabilir, izinli ve adalet guardrail'li kişiselleştirme
-48. AI risk sınıfları, insan incelemesi, itiraz ve kill switch
-49. Realtime/batch GPU kuyrukları, autoscaling, fallback ve maliyet kontrolü
-50. Kaynak medya, 3D artefact, sağlık girdisi ve eğitim verisi saklama yönetişimi
-51. PostgreSQL şema domain ER haritası
-52. Rezervasyon, ödeme, ledger, payout, review ve dispute ayrıntılı SQL ERD
-53. Kesin teknoloji yığını ve Kubernetes üretim deployment
-54. Modüler monolit domain ve servis sınırları
-55. Kayıt, giriş, risk kontrolü ve refresh token rotation sequence
-56. Teklif, slot kilidi ve idempotent rezervasyon sequence
-57. İmzalı ödeme webhook, ledger ve rezervasyon geçişi sequence
-58. Upload, izin, AI/3D job, GPU worker ve sonuç sequence
-59. Transactional outbox, NATS ve Temporal domain event entegrasyonu
-60. API doğrulama, yetki, idempotency ve RFC 9457 hata sözleşmesi
+Completed design package, handed off to development. Start with `YAZILIMCI-HANDOFF.md` (Turkish).
 
-## Kapsam sınırı
+## Features
 
-Bu repository hedef mimari ve uygulama sözleşmesidir; çalışan ürün kaynak kodu değildir. Hukuki ve veterinerlik kararları ilgili uzman onayından geçmelidir.
+- 60 UML views in six sections, browsable in `index.html`
+- Architecture decisions summary (`PATI-MIMARI.md`)
+- Validated OpenAPI 3.1.2 contract (`pati-api/openapi.yaml`)
+- Module ownership and transaction boundaries
+- PostgreSQL migration set (`pati-sql/migrations/`)
+- Postman collection with a parallel Newman load-test runner
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| API contract | OpenAPI 3.1.2 |
+| Database | PostgreSQL (PL/pgSQL migrations) |
+| Diagrams | UML, static HTML viewer |
+| Load testing | Postman, Newman |
+
+## Getting Started
+
+Open `index.html` for the diagrams, or read the documents in this order:
+
+1. `YAZILIMCI-HANDOFF.md` — implementation order and Definition of Done
+2. `PATI-MIMARI.md` — architecture decisions
+3. `pati-api/openapi.yaml`, `pati-api/SERVIS-SINIRLARI.md`, `pati-api/TEKNOLOJI-YIGINI.md`
+4. `pati-sql/migrations/`
+
+## Project Structure
+
+```
+pati-system-design/
+├── pati/
+├── pati-api/
+├── pati-load-test/
+├── pati-sql/
+│   ├── migrations/
+├── PATI-MIMARI.md
+├── README.md
+├── YAZILIMCI-HANDOFF.md
+├── index.html
+```
+
+## License
+
+[MIT License](./LICENSE)
